@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Shortlis8 — Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   TOKENS & RESET
+═══════════════════════════════════════ */
+:root{
+  --bg:#080A0E; --bg2:#0A0C12; --bg3:#0E1018; --bg4:#12151F;
+  --lime:#AAFF00; --lime2:rgba(170,255,0,.1); --lime3:rgba(170,255,0,.06);
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
+  --text:#E8EAF4; --text2:rgba(232,234,244,.55); --text3:rgba(232,234,244,.28);
+  --red:#FF4D4D; --amber:#FFB340; --blue:#4870FF; --green:#34D399;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;font-size:14px;line-height:1.5;font-family:'IBM Plex Sans',sans-serif;color:var(--text);background:var(--bg);}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:rgba(170,255,0,.2);border-radius:4px;}
+button,input,select,textarea{font-family:inherit;}
+input,select,textarea{color:var(--text);}
+
+/* ═══════════════════════════════════════
+   VIEW SWITCHER
+═══════════════════════════════════════ */
+.view-switcher{position:fixed;top:0;left:0;right:0;height:44px;z-index:9999;display:flex;align-items:center;background:rgba(5,5,8,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;gap:0;}
+.sw-logo{font-family:'Clash Display',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-right:24px;flex-shrink:0;}
+.sw-logo span{color:var(--lime);}
+.sw-tabs{display:flex;gap:2px;flex:1;}
+.stab{padding:6px 16px;border-radius:6px;border:none;background:none;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.stab:hover{color:var(--text2);}
+.stab.on{background:var(--lime2);color:var(--lime);}
+.stab-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;}
+.sw-right{margin-left:auto;font-size:11px;color:var(--text3);}
+
+.view{display:none;position:fixed;top:44px;left:0;right:0;bottom:0;overflow:hidden;}
+.view.on{display:flex;flex-direction:column;}
+
+/* ═══════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════ */
+.pill{display:inline-flex;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;}
+.pill-green{background:rgba(52,211,153,.12);color:#34D399;}
+.pill-lime{background:var(--lime2);color:var(--lime);}
+.pill-blue{background:rgba(72,112,255,.15);color:#7B9FFF;}
+.pill-amber{background:rgba(255,179,64,.12);color:var(--amber);}
+.pill-red{background:rgba(255,77,77,.12);color:var(--red);}
+.pill-gray{background:rgba(255,255,255,.07);color:var(--text2);}
+
+.score-chip{display:inline-flex;align-items:center;justify-content:center;width:36px;height:26px;border-radius:7px;font-size:12px;font-weight:700;font-family:'Geist Mono',monospace;}
+.score-hi{background:rgba(52,211,153,.12);color:#34D399;}
+.score-mid{background:rgba(255,179,64,.12);color:var(--amber);}
+.score-lo{background:rgba(255,77,77,.12);color:var(--red);}
+.score-na{background:rgba(255,255,255,.06);color:var(--text3);}
+
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.8);}}
+@keyframes rpulse{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes airing{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.5}}
+@keyframes aiwave{0%,100%{height:4px}50%{height:22px}}
+@keyframes slideIn{from{opacity:0;transform:translateX(12px);}to{opacity:1;transform:translateX(0);}}
+
+/* ═══════════════════════════════════════
+   VIEW 1 — CANDIDATE
+   Warm ivory-ish but Shortlis8 branded
+═══════════════════════════════════════ */
+#v-candidate{background:#F7F8FC;color:#1A1D2E;font-family:'IBM Plex Sans',sans-serif;}
+
+.cv-nav{height:56px;background:#fff;border-bottom:1px solid #E4E6F0;display:flex;align-items:center;padding:0 28px;gap:14px;flex-shrink:0;}
+.cv-brand{font-family:'Clash Display',sans-serif;font-size:18px;font-weight:700;color:#1A1D2E;letter-spacing:-.5px;}
+.cv-brand span{color:#4F46E5;}
+.cv-brand-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#4F46E5;background:rgba(79,70,229,.08);padding:2px 7px;border-radius:4px;margin-left:6px;}
+.cv-tabs{display:flex;gap:0;margin-left:28px;}
+.cv-tab{padding:7px 14px;border:none;background:none;font-size:12px;font-weight:500;color:#78716C;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.cv-tab.on{color:#1A1D2E;border-bottom-color:#4F46E5;}
+.cv-nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.cv-avatar{width:32px;height:32px;border-radius:8px;background:#080A0E;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--lime);}
+.cv-name-block{text-align:right;}
+.cv-uname{font-size:12px;font-weight:600;color:#1A1D2E;}
+.cv-urole{font-size:10px;color:#A8A29E;}
+
+.cv-body{flex:1;display:flex;overflow:hidden;}
+.cv-sidebar{width:230px;background:#fff;border-right:1px solid #E4E6F0;display:flex;flex-direction:column;padding:18px 12px;gap:2px;overflow-y:auto;flex-shrink:0;}
+.cv-sb-group{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#C4B5A5;padding:5px 10px;margin-top:14px;}
+.cv-sb-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;color:#78716C;transition:all .15s;border:none;background:none;width:100%;text-align:left;}
+.cv-sb-item:hover{background:#F5F5FA;color:#1A1D2E;}
+.cv-sb-item.on{background:rgba(8,10,14,.06);color:#1A1D2E;}
+.cv-sb-ico{font-size:15px;width:18px;text-align:center;}
+.cv-sb-badge{margin-left:auto;background:#080A0E;color:var(--lime);border-radius:8px;padding:1px 6px;font-size:10px;font-weight:700;}
+.cv-content{flex:1;overflow-y:auto;padding:28px;}
+.cv-page{display:none;}
+.cv-page.on{display:block;}
+
+/* Candidate hero */
+.cv-hero{background:linear-gradient(135deg,#080A0E 0%,#0E1018 60%,#12151F 100%);border-radius:18px;padding:32px 36px;margin-bottom:24px;position:relative;overflow:hidden;}
+.cv-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1' fill='rgba(170,255,0,0.06)'/%3E%3C/svg%3E") repeat;}
+.cv-hero::after{content:'';position:absolute;top:-100px;right:-100px;width:300px;height:300px;background:radial-gradient(ellipse,rgba(170,255,0,.07),transparent 65%);pointer-events:none;}
+.cv-hero-inner{position:relative;}
+.cv-hero-greeting{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--lime);opacity:.7;margin-bottom:8px;}
+.cv-hero-title{font-family:'Clash Display',sans-serif;font-size:26px;font-weight:700;color:#fff;line-height:1.1;letter-spacing:-.5px;margin-bottom:8px;}
+.cv-hero-sub{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:22px;}
+.cv-hero-steps{display:flex;gap:12px;}
+.cv-hero-step{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;flex:1;}
+.cv-hero-step-num{font-family:'Geist Mono',monospace;font-size:18px;font-weight:600;color:var(--lime);margin-bottom:4px;line-height:1;}
+.cv-hero-step-text{font-size:11px;color:rgba(255,255,255,.45);line-height:1.5;}
+
+/* Journey */
+.journey-track{display:flex;align-items:center;gap:0;background:#fff;border:1px solid #E4E6F0;border-radius:14px;padding:18px 22px;margin-bottom:22px;}
+.journey-node{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;}
+.journey-circle{width:34px;height:34px;border-radius:50%;border:2px solid #E4E6F0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .3s;}
+.journey-circle.done{border-color:var(--lime);background:rgba(170,255,0,.08);}
+.journey-circle.active{border-color:#080A0E;background:#f0f0f0;box-shadow:0 0 0 3px rgba(8,10,14,.08);}
+.journey-label{font-size:10px;font-weight:500;color:#A8A29E;}
+.journey-label.active{color:#1A1D2E;font-weight:600;}
+.journey-label.done{color:#1A1D2E;}
+.journey-line{flex:1;height:2px;background:#E4E6F0;margin:0 4px;align-self:start;margin-top:16px;}
+.journey-line.done{background:var(--lime);}
+
+/* Invite card */
+.invite-card{background:#fff;border:1px solid #E4E6F0;border-radius:16px;padding:24px;margin-bottom:18px;display:flex;gap:20px;align-items:start;}
+.invite-card-ico{width:52px;height:52px;background:#080A0E;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.invite-card-body{flex:1;}
+.invite-card-company{font-size:11px;font-weight:700;color:var(--lime);background:#080A0E;border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:6px;letter-spacing:.5px;}
+.invite-card-title{font-family:'Clash Display',sans-serif;font-size:18px;font-weight:600;color:#1A1D2E;margin-bottom:5px;}
+.invite-card-meta{font-size:12px;color:#78716C;margin-bottom:10px;}
+.invite-card-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.cv-tag{padding:3px 9px;border-radius:5px;font-size:11px;background:#F0F2F8;color:#5E6899;font-weight:500;}
+.cv-tag-dark{background:#080A0E;color:var(--lime);font-weight:600;}
+.cv-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.cv-btn-primary{background:#080A0E;color:var(--lime);}
+.cv-btn-primary:hover{background:#12151F;transform:translateY(-1px);box-shadow:0 4px 16px rgba(8,10,14,.2);}
+.cv-btn-ghost{background:transparent;color:#78716C;border:1.5px solid #E4E6F0;}
+.cv-btn-ghost:hover{border-color:#D0D3E0;color:#1A1D2E;}
+
+/* Result page */
+.cv-result-hero{background:linear-gradient(135deg,#080A0E,#0E1018);border-radius:18px;padding:28px;margin-bottom:22px;position:relative;overflow:hidden;}
+.cv-result-hero::after{content:'';position:absolute;top:-80px;right:-80px;width:250px;height:250px;background:radial-gradient(ellipse,rgba(170,255,0,.1),transparent 65%);}
+.cv-result-score{font-family:'Geist Mono',monospace;font-size:60px;font-weight:600;color:var(--lime);line-height:1;letter-spacing:-2px;}
+.cv-result-verdict{font-size:13px;color:rgba(255,255,255,.5);margin-top:4px;}
+.cv-result-msg{font-size:14px;color:rgba(255,255,255,.6);max-width:380px;margin-top:10px;line-height:1.6;}
+.cv-feedback-card{background:#fff;border:1px solid #E4E6F0;border-radius:14px;padding:20px;margin-bottom:12px;}
+.cv-feedback-title{font-family:'Clash Display',sans-serif;font-size:15px;font-weight:600;margin-bottom:10px;color:#1A1D2E;}
+.cv-feedback-item{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid #F0F2F8;font-size:12px;color:#5E6899;}
+.cv-feedback-item:last-child{border-bottom:none;}
+
+/* VIDEO ROOM */
+.cv-room{display:none;position:absolute;inset:0;top:0;background:#060810;flex-direction:column;}
+.cv-room.on{display:flex;}
+.cv-room-bar{height:50px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;padding:0 18px;gap:12px;flex-shrink:0;}
+.cv-room-brand{font-family:'Clash Display',sans-serif;font-size:14px;font-weight:700;color:#fff;letter-spacing:-.3px;}
+.cv-room-brand span{color:var(--lime);}
+.cv-room-rec{margin-left:auto;display:flex;align-items:center;gap:7px;}
+.rec-pulse{width:8px;height:8px;border-radius:50%;background:#EF4444;animation:rpulse 1.5s infinite;}
+.cv-room-stage{flex:1;display:flex;gap:12px;padding:14px;min-height:0;}
+.cv-ai-tile{flex:1;border-radius:16px;background:linear-gradient(145deg,#0D1520,#080A0E);border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cv-ai-bg{position:absolute;inset:0;background:radial-gradient(circle at 30% 40%,rgba(170,255,0,.05),transparent 55%);}
+.ai-interviewer-core{display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;}
+.ai-core-orb{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#080A0E,#12151F);border:2px solid rgba(170,255,0,.3);display:flex;align-items:center;justify-content:center;font-family:'Clash Display',sans-serif;font-size:28px;font-weight:700;color:var(--lime);position:relative;z-index:2;box-shadow:0 0 30px rgba(170,255,0,.1);}
+.ai-core-ring{position:absolute;border-radius:50%;border:1.5px solid rgba(170,255,0,.15);animation:airing 3s infinite ease-in-out;}
+.ai-core-ring:nth-child(1){inset:-12px;animation-delay:0s;}
+.ai-core-ring:nth-child(2){inset:-26px;animation-delay:.7s;border-color:rgba(170,255,0,.08);}
+.ai-core-ring:nth-child(3){inset:-42px;animation-delay:1.4s;border-color:rgba(170,255,0,.04);}
+.ai-voice-wave{display:flex;align-items:center;gap:3px;height:26px;}
+.ai-voice-wave span{width:3px;border-radius:2px;background:var(--lime);height:4px;opacity:.6;}
+.ai-voice-wave.speak span{animation:aiwave .8s infinite ease-in-out;}
+.ai-voice-wave.speak span:nth-child(1){animation-delay:0s;}
+.ai-voice-wave.speak span:nth-child(2){animation-delay:.07s;}
+.ai-voice-wave.speak span:nth-child(3){animation-delay:.14s;}
+.ai-voice-wave.speak span:nth-child(4){animation-delay:.21s;}
+.ai-voice-wave.speak span:nth-child(5){animation-delay:.28s;}
+.ai-voice-wave.speak span:nth-child(6){animation-delay:.21s;}
+.ai-voice-wave.speak span:nth-child(7){animation-delay:.14s;}
+.cv-q-overlay{position:absolute;top:0;left:0;right:0;padding:16px 20px;background:linear-gradient(180deg,rgba(6,8,16,.92),transparent);}
+.cv-q-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:16px;background:var(--lime2);border:1px solid rgba(170,255,0,.2);font-size:10px;font-weight:700;color:var(--lime);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.cv-q-text{font-family:'Clash Display',sans-serif;font-size:15px;color:#fff;line-height:1.5;max-width:580px;letter-spacing:-.2px;}
+.ai-name-chip{position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--lime);}
+.cv-self-panel{width:210px;display:flex;flex-direction:column;gap:10px;}
+.cv-self-tile{border-radius:12px;background:#0E1018;border:1.5px solid rgba(255,255,255,.07);overflow:hidden;aspect-ratio:3/4;position:relative;display:flex;align-items:center;justify-content:center;}
+.cv-self-cam-off{display:flex;flex-direction:column;align-items:center;gap:7px;}
+.cv-self-av{width:48px;height:48px;border-radius:50%;background:#12151F;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--lime);}
+.cv-self-name{position:absolute;bottom:7px;left:7px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);border-radius:5px;padding:3px 8px;font-size:10px;color:#fff;}
+.cv-signal-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px;}
+.cv-signal-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:10px;}
+.cv-signal-bar{margin-bottom:7px;}
+.cv-signal-bar-header{display:flex;justify-content:space-between;margin-bottom:3px;font-size:10px;}
+.cv-signal-bar-label{color:rgba(255,255,255,.4);}
+.cv-signal-bar-val{font-weight:700;color:rgba(255,255,255,.7);font-family:'Geist Mono',monospace;}
+.cv-sig-bg{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.cv-sig-fill{height:100%;border-radius:2px;transition:width .8s ease;}
+.cv-room-controls{height:68px;background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;gap:10px;flex-shrink:0;}
+.cv-ctrl{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.cv-ctrl-btn{width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .15s;}
+.cv-ctrl-btn:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);}
+.cv-ctrl-btn.off{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#F87171;}
+.cv-ctrl-btn.end{background:#EF4444;border-color:#EF4444;color:#fff;width:52px;height:52px;font-size:18px;}
+.cv-ctrl-lbl{font-size:9px;text-transform:uppercase;color:rgba(255,255,255,.22);letter-spacing:.5px;}
+.cv-answer-bar{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);background:rgba(10,12,18,.96);border:1.5px solid rgba(170,255,0,.25);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-end;box-shadow:0 8px 32px rgba(0,0,0,.6);min-width:460px;z-index:50;}
+.cv-ans-input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:9px 12px;font-size:13px;color:#fff;outline:none;resize:none;min-height:46px;max-height:90px;}
+.cv-ans-input::placeholder{color:rgba(255,255,255,.2);}
+.cv-ans-send{padding:10px 16px;background:var(--lime);border:none;border-radius:8px;color:#000;font-weight:700;font-size:12px;cursor:pointer;flex-shrink:0;}
+.hidden{display:none!important;}
+
+/* ═══════════════════════════════════════
+   VIEW 2 — RECRUITER
+═══════════════════════════════════════ */
+#v-recruiter{background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--text);}
+
+.rv-topbar{height:52px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;}
+.rv-brand{font-family:'Clash Display',sans-serif;font-size:17px;font-weight:700;color:#fff;letter-spacing:-.4px;}
+.rv-brand span{color:var(--lime);}
+.rv-tabs{display:flex;gap:2px;margin-left:14px;}
+.rv-tab{padding:5px 13px;border-radius:6px;border:none;background:none;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;}
+.rv-tab:hover{color:var(--text2);}
+.rv-tab.on{background:var(--lime2);color:var(--lime);}
+.rv-topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.rv-notif{position:relative;font-size:16px;cursor:pointer;}
+.rv-notif-dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1px solid var(--bg2);}
+.rv-ublock{text-align:right;}
+.rv-uname{font-size:12px;font-weight:600;color:#fff;}
+.rv-urole{font-size:10px;color:var(--text3);}
+.rv-avatar{width:30px;height:30px;border-radius:8px;background:var(--lime2);border:1px solid rgba(170,255,0,.25);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--lime);}
+
+.rv-body{flex:1;display:flex;overflow:hidden;}
+.rv-sidebar{width:210px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:14px 10px;overflow-y:auto;flex-shrink:0;}
+.rv-sidebar-section{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);padding:5px 10px;margin-top:14px;}
+.rv-sidebar-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);transition:all .15s;border:none;background:none;width:100%;text-align:left;}
+.rv-sidebar-item:hover{background:rgba(255,255,255,.05);color:var(--text);}
+.rv-sidebar-item.on{background:var(--lime2);color:var(--lime);}
+.rv-sidebar-ico{font-size:13px;width:16px;text-align:center;}
+.rv-sb-badge{margin-left:auto;font-size:9px;font-weight:700;padding:1px 6px;border-radius:7px;}
+.rv-sb-badge{background:var(--lime2);color:var(--lime);}
+.rv-sb-badge.amber{background:rgba(255,179,64,.12);color:var(--amber);}
+.rv-sb-badge.green{background:rgba(52,211,153,.1);color:#34D399;}
+
+/* Agent strip */
+.rv-agent-strip{margin-top:auto;padding:12px 10px 8px;border-top:1px solid var(--border);}
+.rv-agent-strip-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px;}
+.rv-agent-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;}
+.rv-agent-ico{font-size:11px;}
+.rv-agent-lbl{flex:1;color:var(--text2);}
+.rv-agent-state{font-size:10px;color:var(--text3);font-family:'Geist Mono',monospace;}
+.rv-agent-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12);}
+.rv-agent-dot.live{background:var(--lime);animation:pulse .8s infinite;}
+.rv-agent-dot.done{background:#34D399;}
+
+.rv-content{flex:1;overflow-y:auto;padding:20px;}
+.rv-page{display:none;}
+.rv-page.on{display:block;}
+
+/* Recruiter command hero */
+.rv-cmd-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:18px;}
+.rv-stat-block{background:var(--bg3);padding:20px 18px;}
+.rv-stat-val{font-family:'Geist Mono',monospace;font-size:30px;font-weight:600;line-height:1;letter-spacing:-1px;}
+.rv-stat-sub{font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
+.rv-stat-delta{font-size:10px;margin-top:6px;}
+.rv-stat-delta.up{color:var(--lime);}
+.rv-stat-delta.live{color:var(--amber);}
+
+/* Kanban */
+.rv-pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+.rv-pipe-col{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;min-height:160px;}
+.rv-pipe-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.rv-pipe-col-title{font-size:11px;font-weight:700;color:var(--text2);}
+.rv-pipe-count{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:rgba(255,255,255,.07);color:var(--text3);}
+.rv-pipe-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.rv-pipe-card:hover{border-color:rgba(170,255,0,.2);}
+.rv-pipe-card-name{font-size:12px;font-weight:600;color:#fff;margin-bottom:2px;}
+.rv-pipe-card-role{font-size:10px;color:var(--text3);}
+.rv-pipe-card-score{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);margin-top:5px;}
+.rv-pipe-card-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+
+/* Tables */
+.rv-table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.rv-table-header{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.rv-table-title{font-size:13px;font-weight:700;flex:1;}
+.rv-search{display:flex;align-items:center;gap:6px;background:var(--bg4);border:1px solid var(--border);border-radius:7px;padding:6px 11px;}
+.rv-search input{border:none;background:none;font-size:11px;color:var(--text);outline:none;width:180px;}
+.rv-search input::placeholder{color:var(--text3);}
+.rv-filter-btns{display:flex;gap:4px;}
+.rv-filter-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;}
+.rv-filter-btn:hover,.rv-filter-btn.on{border-color:rgba(170,255,0,.3);color:var(--lime);background:var(--lime2);}
+table.rv-tbl{width:100%;border-collapse:collapse;}
+table.rv-tbl thead th{padding:9px 16px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);background:var(--bg3);border-bottom:1px solid var(--border);}
+table.rv-tbl tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+table.rv-tbl tbody tr:hover{background:rgba(255,255,255,.025);}
+table.rv-tbl td{padding:11px 16px;font-size:12px;}
+.rv-row-actions{display:flex;gap:5px;}
+.rv-act-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;font-size:10px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;}
+.rv-act-btn:hover{border-color:rgba(170,255,0,.3);color:var(--lime);}
+.rv-act-btn.green{border-color:rgba(170,255,0,.2);color:var(--lime);background:var(--lime2);}
+
+/* Upload */
+.rv-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+.rv-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:12px;}
+.rv-fi{width:100%;padding:9px 12px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);outline:none;transition:all .15s;}
+.rv-fi:focus{border-color:rgba(170,255,0,.4);box-shadow:0 0 0 3px rgba(170,255,0,.05);}
+.rv-fi::placeholder{color:var(--text3);}
+select.rv-fi{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(232,234,244,.3)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.rv-fg{margin-bottom:11px;}
+.rv-fl{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;}
+.rv-drop{border:1.5px dashed rgba(255,255,255,.1);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;}
+.rv-drop:hover{border-color:rgba(170,255,0,.3);background:var(--lime3);}
+.rv-drop-icon{font-size:28px;margin-bottom:8px;}
+.rv-drop-title{font-size:13px;font-weight:600;margin-bottom:3px;}
+.rv-drop-sub{font-size:11px;color:var(--text3);}
+.rv-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.rv-btn-p{background:var(--lime);color:#000;}
+.rv-btn-p:hover{background:#BBFF22;box-shadow:0 4px 14px rgba(170,255,0,.25);}
+.rv-btn-p:disabled{opacity:.4;cursor:not-allowed;}
+.rv-btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
+.rv-btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.rv-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.rv-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.rv-sep{height:1px;background:var(--border);margin:12px 0;}
+
+/* Candidate detail panel */
+.rv-detail-panel{position:fixed;top:44px;right:-400px;bottom:0;width:380px;background:var(--bg2);border-left:1px solid rgba(170,255,0,.15);z-index:500;transition:right .3s ease;overflow-y:auto;}
+.rv-detail-panel.open{right:0;}
+.rv-detail-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:var(--bg3);}
+.rv-detail-close{margin-left:auto;width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rv-detail-body{padding:16px;}
+.rv-section{margin-bottom:18px;}
+.rv-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:10px;}
+.rv-dim-bar{margin-bottom:9px;}
+.rv-dim-header{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;}
+.rv-dim-label{color:var(--text2);}
+.rv-dim-val{font-weight:700;font-family:'Geist Mono',monospace;}
+.rv-dim-bg{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.rv-dim-fill{height:100%;border-radius:3px;transition:width .8s ease;}
+.rv-insight-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);}
+.rv-insight-item:last-child{border-bottom:none;}
+.rv-insight-num{width:18px;height:18px;border-radius:50%;background:var(--lime2);color:var(--lime);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.rv-flag-row{display:flex;align-items:start;gap:8px;padding:9px 11px;border-radius:9px;margin-bottom:6px;font-size:12px;}
+.rv-flag-str{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);}
+.rv-flag-con{background:rgba(255,179,64,.06);border:1px solid rgba(255,179,64,.12);}
+.rv-qa-block{background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+.rv-qa-q{padding:10px 12px;font-size:11px;font-weight:600;color:#fff;border-bottom:1px solid var(--border);}
+.rv-qa-a{padding:9px 12px;font-size:11px;color:var(--text2);line-height:1.65;}
+.rv-qa-note{padding:7px 12px;background:var(--lime3);border-top:1px solid rgba(170,255,0,.08);font-size:10px;color:var(--lime);display:flex;gap:5px;}
+.rv-manager-box{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:9px;padding:14px;font-size:12px;color:var(--text2);line-height:1.75;font-style:italic;}
+.rv-pill{display:inline-flex;padding:2px 8px;border-radius:7px;font-size:10px;font-weight:700;}
+.rv-pill-green{background:rgba(52,211,153,.1);color:#34D399;}
+.rv-pill-blue{background:rgba(72,112,255,.12);color:#7B9FFF;}
+.rv-pill-amber{background:rgba(255,179,64,.1);color:var(--amber);}
+.rv-pill-red{background:rgba(255,77,77,.1);color:var(--red);}
+.rv-pill-gray{background:rgba(255,255,255,.06);color:var(--text2);}
+.rv-score-chip{display:inline-flex;align-items:center;justify-content:center;width:34px;height:25px;border-radius:6px;font-size:12px;font-weight:700;font-family:'Geist Mono',monospace;}
+.rv-score-hi{background:rgba(52,211,153,.1);color:#34D399;}
+.rv-score-mid{background:rgba(255,179,64,.1);color:var(--amber);}
+.rv-score-lo{background:rgba(255,77,77,.1);color:var(--red);}
+.rv-score-na{background:rgba(255,255,255,.06);color:var(--text3);}
+.rv-upload-layout{display:grid;grid-template-columns:1fr 320px;gap:16px;}
+.mb14{margin-bottom:14px!important;}
+.mb16{margin-bottom:16px!important;}
+.mb20{margin-bottom:20px!important;}
+
+/* ═══════════════════════════════════════
+   VIEW 3 — ENTERPRISE
+═══════════════════════════════════════ */
+#v-enterprise{background:#F0F2F8;font-family:'IBM Plex Sans',sans-serif;color:#1A2035;}
+
+.ev-topbar{height:52px;background:#1A2035;display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;}
+.ev-brand{font-family:'Clash Display',sans-serif;font-size:16px;font-weight:700;color:#fff;letter-spacing:-.3px;}
+.ev-brand span{color:var(--lime);}
+.ev-brand-divider{width:1px;height:18px;background:rgba(255,255,255,.15);}
+.ev-org-name{font-size:12px;font-weight:500;color:rgba(255,255,255,.45);}
+.ev-nav{display:flex;gap:2px;margin-left:20px;}
+.ev-nav-tab{padding:5px 12px;border-radius:5px;border:none;background:none;font-size:11px;font-weight:500;color:rgba(255,255,255,.35);cursor:pointer;transition:all .15s;}
+.ev-nav-tab:hover{color:rgba(255,255,255,.65);}
+.ev-nav-tab.on{background:rgba(170,255,0,.1);color:var(--lime);}
+.ev-topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.ev-user-block{text-align:right;}
+.ev-uname{font-size:11px;font-weight:600;color:#fff;}
+.ev-urole{font-size:10px;color:rgba(255,255,255,.3);}
+.ev-avatar{width:30px;height:30px;border-radius:8px;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;}
+
+.ev-body{flex:1;display:flex;overflow:hidden;}
+.ev-left-nav{width:206px;background:#1E2540;display:flex;flex-direction:column;padding:14px 10px;overflow-y:auto;flex-shrink:0;}
+.ev-nav-section{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.2);padding:5px 10px;margin-top:14px;}
+.ev-nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500;color:rgba(255,255,255,.38);transition:all .15s;border:none;background:none;width:100%;text-align:left;}
+.ev-nav-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);}
+.ev-nav-item.on{background:rgba(170,255,0,.1);color:var(--lime);}
+.ev-nav-item-ico{font-size:13px;width:16px;text-align:center;}
+.ev-nav-badge{margin-left:auto;font-size:9px;font-weight:700;padding:2px 5px;border-radius:7px;}
+.ev-nav-badge.blue{background:rgba(72,112,255,.2);color:#7B9FFF;}
+.ev-nav-badge.green{background:rgba(52,211,153,.12);color:#34D399;}
+.ev-nav-badge.amber{background:rgba(255,179,64,.15);color:var(--amber);}
+.ev-content{flex:1;overflow-y:auto;padding:24px 26px;}
+.ev-page{display:none;}
+.ev-page.on{display:block;}
+
+.ev-cmd-strip{background:#1A2035;border-radius:16px;padding:22px 26px;margin-bottom:18px;display:flex;gap:0;overflow:hidden;position:relative;}
+.ev-cmd-strip::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(170,255,0,.07),transparent 60%);}
+.ev-cmd-inner{position:relative;flex:1;}
+.ev-cmd-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:8px;}
+.ev-cmd-headline{font-family:'Clash Display',sans-serif;font-size:22px;font-weight:600;color:#fff;letter-spacing:-.3px;margin-bottom:5px;}
+.ev-cmd-sub{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:16px;}
+.ev-cmd-actions{display:flex;gap:8px;}
+.ev-cmd-metrics{display:flex;gap:1px;background:rgba(255,255,255,.04);border-radius:10px;overflow:hidden;align-self:flex-start;min-width:320px;}
+.ev-cmd-metric{padding:16px 20px;background:rgba(255,255,255,.02);}
+.ev-cmd-metric-val{font-family:'Geist Mono',monospace;font-size:24px;font-weight:500;line-height:1;}
+.ev-cmd-metric-lbl{font-size:10px;color:rgba(255,255,255,.25);margin-top:3px;}
+.ev-cmd-metric-delta{font-size:10px;margin-top:4px;}
+.ev-delta-up{color:var(--lime);}.ev-delta-dn{color:var(--red);}
+
+.ev-dept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.ev-dept-card{background:#fff;border:1px solid #DDE1EE;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s;}
+.ev-dept-card:hover{border-color:rgba(170,255,0,.4);box-shadow:0 4px 16px rgba(170,255,0,.06);}
+.ev-dept-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:10px;}
+.ev-dept-name{font-size:14px;font-weight:700;margin-bottom:2px;color:#1A2035;}
+.ev-dept-meta{font-size:11px;color:#5E6899;}
+.ev-dept-progress{margin-top:10px;}
+.ev-dept-progress-label{display:flex;justify-content:space-between;font-size:10px;color:#5E6899;margin-bottom:3px;}
+.ev-dept-bar{height:4px;background:#E8EAF2;border-radius:3px;overflow:hidden;}
+.ev-dept-bar-fill{height:100%;border-radius:3px;background:#1A2035;}
+
+.ev-table-wrap{background:#fff;border:1px solid #DDE1EE;border-radius:12px;overflow:hidden;}
+.ev-table-header{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #EEF0F8;}
+.ev-table-title{font-size:13px;font-weight:700;flex:1;color:#1A2035;}
+.ev-search-box{display:flex;align-items:center;gap:6px;background:#F0F2F8;border:1px solid #DDE1EE;border-radius:7px;padding:6px 11px;min-width:200px;}
+.ev-search-box input{border:none;background:none;font-size:11px;color:#1A2035;outline:none;flex:1;}
+.ev-search-box input::placeholder{color:#8892B0;}
+.ev-filter-btns{display:flex;gap:4px;}
+.ev-filter-btn{padding:4px 10px;border-radius:5px;border:1.5px solid #DDE1EE;background:#fff;font-size:10px;font-weight:500;color:#5E6899;cursor:pointer;transition:all .15s;}
+.ev-filter-btn:hover,.ev-filter-btn.on{border-color:var(--lime);color:#1A2035;background:rgba(170,255,0,.06);}
+table.ev-tbl{width:100%;border-collapse:collapse;}
+table.ev-tbl thead th{padding:9px 16px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8892B0;background:#F7F8FC;border-bottom:1px solid #EEF0F8;}
+table.ev-tbl tbody tr{border-bottom:1px solid #EEF0F8;cursor:pointer;transition:background .1s;}
+table.ev-tbl tbody tr:hover{background:#F7F8FC;}
+table.ev-tbl td{padding:11px 16px;font-size:12px;}
+.ev-score-chip{display:inline-flex;align-items:center;justify-content:center;width:34px;height:26px;border-radius:6px;font-size:12px;font-weight:700;font-family:'Geist Mono',monospace;}
+.ev-score-hi{background:#DCFCE7;color:#166534;}
+.ev-score-mid{background:#FEF3C7;color:#92400E;}
+.ev-score-lo{background:#FEE2E2;color:#991B1B;}
+.ev-score-na{background:#F0F2F8;color:#8892B0;}
+.ev-pill{display:inline-flex;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;}
+.ev-pill-blue{background:#DBEAFE;color:#1D4ED8;}
+.ev-pill-green{background:#DCFCE7;color:#166534;}
+.ev-pill-amber{background:#FEF3C7;color:#92400E;}
+.ev-pill-red{background:#FEE2E2;color:#991B1B;}
+.ev-pill-gray{background:#F0F2F8;color:#5E6899;}
+.ev-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
+.ev-btn-primary{background:#1A2035;color:#fff;}
+.ev-btn-primary:hover{background:#080A0E;box-shadow:0 4px 14px rgba(8,10,14,.2);}
+.ev-btn-ghost{background:transparent;color:#5E6899;border:1.5px solid #DDE1EE;}
+.ev-btn-ghost:hover{border-color:#1A2035;color:#1A2035;}
+.ev-card{background:#fff;border:1px solid #DDE1EE;border-radius:12px;padding:18px;}
+.ev-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#8892B0;margin-bottom:12px;}
+.ev-compliance-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EEF0F8;font-size:12px;}
+.ev-compliance-row:last-child{border-bottom:none;}
+.ev-compliance-label{color:#1A2035;font-weight:500;}
+.ev-compliance-val{display:flex;align-items:center;gap:5px;}
+.ev-check-badge{width:18px;height:18px;border-radius:50%;background:#DCFCE7;display:flex;align-items:center;justify-content:center;font-size:9px;color:#166534;}
+.ev-warn-badge{width:18px;height:18px;border-radius:50%;background:#FEF3C7;display:flex;align-items:center;justify-content:center;font-size:9px;color:#92400E;}
+
+/* ═══════════════════════════════════════
+   VIEW 4 — PROVIDER (Shortlis8 Ops)
+═══════════════════════════════════════ */
+#v-provider{background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--text);}
+
+.pv-topbar{height:52px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;}
+.pv-brand{font-family:'Clash Display',sans-serif;font-size:17px;font-weight:700;color:#fff;letter-spacing:-.4px;}
+.pv-brand span{color:var(--lime);}
+.pv-brand-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(170,255,0,.5);background:var(--lime3);padding:2px 7px;border-radius:4px;margin-left:6px;}
+.pv-tabs{display:flex;gap:2px;margin-left:12px;}
+.pv-tab{padding:5px 12px;border-radius:6px;border:none;background:none;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;}
+.pv-tab:hover{color:var(--text2);}
+.pv-tab.on{background:var(--lime2);color:var(--lime);}
+.pv-topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.pv-live-badge{display:flex;align-items:center;gap:5px;background:var(--lime3);border:1px solid rgba(170,255,0,.2);border-radius:16px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--lime);}
+.pv-live-dot{width:5px;height:5px;border-radius:50%;background:var(--lime);animation:pulse .8s infinite;}
+.pv-avatar{width:30px;height:30px;border-radius:8px;background:var(--bg3);border:1px solid rgba(170,255,0,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--lime);}
+
+.pv-body{flex:1;display:flex;overflow:hidden;}
+.pv-sidebar{width:206px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:14px 10px;overflow-y:auto;flex-shrink:0;}
+.pv-sidebar-section{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);padding:5px 10px;margin-top:14px;}
+.pv-sidebar-item{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);transition:all .15s;border:none;background:none;width:100%;text-align:left;}
+.pv-sidebar-item:hover{background:rgba(255,255,255,.05);color:var(--text);}
+.pv-sidebar-item.on{background:var(--lime2);color:var(--lime);}
+.pv-sidebar-ico{font-size:12px;width:16px;text-align:center;}
+.pv-sb-badge{margin-left:auto;font-size:9px;font-weight:700;padding:1px 5px;border-radius:7px;background:var(--lime2);color:var(--lime);}
+.pv-sb-badge.red{background:rgba(255,77,77,.15);color:var(--red);}
+.pv-sb-badge.blue{background:rgba(72,112,255,.15);color:#7B9FFF;}
+
+.pv-content{flex:1;overflow-y:auto;padding:20px;}
+.pv-page{display:none;}
+.pv-page.on{display:block;}
+
+.pv-kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.pv-kpi-block{background:var(--bg3);padding:16px 14px;}
+.pv-kpi-val{font-family:'Geist Mono',monospace;font-size:24px;font-weight:600;line-height:1;letter-spacing:-.8px;}
+.pv-kpi-label{font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.4px;}
+.pv-kpi-delta{font-size:10px;margin-top:5px;}
+.pv-delta-up{color:var(--lime);}.pv-delta-dn{color:var(--red);}.pv-delta-neu{color:var(--text3);}
+
+.pv-revenue-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;}
+.pv-revenue-header{display:flex;align-items:start;justify-content:space-between;margin-bottom:14px;}
+.pv-revenue-amount{font-family:'Geist Mono',monospace;font-size:24px;font-weight:600;color:var(--lime);letter-spacing:-.5px;}
+.pv-revenue-sub{font-size:11px;color:var(--text3);}
+.pv-chart-bars{display:flex;gap:6px;align-items:flex-end;height:90px;}
+.pv-chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.pv-chart-bar{width:100%;border-radius:3px 3px 0 0;background:rgba(170,255,0,.18);transition:all .3s;}
+.pv-chart-bar:hover{background:rgba(170,255,0,.4);}
+.pv-chart-bar.selected{background:var(--lime);}
+.pv-chart-lbl{font-size:9px;color:var(--text3);}
+
+.pv-g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.pv-client-grid{display:flex;flex-direction:column;gap:8px;}
+.pv-client-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;}
+.pv-client-card:hover{border-color:rgba(170,255,0,.2);}
+.pv-client-top{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+.pv-client-icon{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:15px;}
+.pv-client-name{font-size:12px;font-weight:700;}
+.pv-client-plan{font-size:10px;color:var(--text3);}
+.pv-client-status{margin-left:auto;}
+.pv-client-metric{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;}
+.pv-client-metric-label{color:var(--text3);}
+.pv-client-metric-val{font-family:'Geist Mono',monospace;font-weight:600;}
+.pv-client-bar{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin-top:6px;}
+.pv-client-bar-fill{height:100%;border-radius:2px;background:var(--lime);}
+
+.pv-system-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.pv-system-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.pv-sys-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:10px;}
+.pv-agent-health{display:flex;flex-direction:column;gap:7px;}
+.pv-agent-health-row{display:flex;align-items:center;gap:9px;}
+.pv-agent-health-name{font-size:11px;font-weight:500;flex:1;}
+.pv-agent-health-bar{flex:2;height:4px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;}
+.pv-agent-health-fill{height:100%;border-radius:3px;background:var(--lime);}
+.pv-agent-health-val{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text3);width:32px;text-align:right;}
+.pv-agent-health-status{font-size:9px;padding:2px 5px;border-radius:4px;font-weight:700;flex-shrink:0;}
+.pv-status-ok{background:var(--lime2);color:var(--lime);}
+.pv-status-warn{background:rgba(255,179,64,.12);color:var(--amber);}
+.pv-status-err{background:rgba(255,77,77,.12);color:var(--red);}
+.pv-pipeline-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;}
+.pv-pipeline-row:last-child{border-bottom:none;}
+.pv-pipeline-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.pv-pipeline-client{font-weight:600;flex:1;}
+.pv-pipeline-role{color:var(--text3);font-size:10px;flex:1;}
+.pv-pipeline-stage{font-size:10px;color:var(--text2);}
+.pv-pipeline-time{font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);flex-shrink:0;}
+.pv-alert-row{display:flex;align-items:start;gap:9px;padding:9px 12px;border-radius:8px;margin-bottom:7px;font-size:11px;}
+.pv-alert-crit{background:rgba(255,77,77,.06);border:1px solid rgba(255,77,77,.14);}
+.pv-alert-warn{background:rgba(255,179,64,.05);border:1px solid rgba(255,179,64,.12);}
+.pv-alert-info{background:var(--lime3);border:1px solid rgba(170,255,0,.1);}
+.pv-alert-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
+.pv-alert-body h4{font-size:11px;font-weight:600;margin-bottom:2px;}
+.pv-alert-body p{color:var(--text3);font-size:10px;}
+.pv-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.pv-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:12px;}
+.pv-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:7px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
+.pv-btn-p{background:var(--lime);color:#000;}
+.pv-btn-p:hover{background:#BBFF22;box-shadow:0 4px 14px rgba(170,255,0,.2);}
+.pv-btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
+.pv-btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.pv-btn-sm{padding:4px 10px;font-size:10px;}
+.pv-fi{width:100%;padding:8px 11px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:7px;font-size:12px;color:var(--text);outline:none;transition:all .15s;}
+.pv-fi:focus{border-color:rgba(170,255,0,.4);box-shadow:0 0 0 3px rgba(170,255,0,.05);}
+.pv-fi::placeholder{color:var(--text3);}
+.pv-fg{margin-bottom:10px;}
+.pv-fl{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:3px;}
+.pv-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.pv-sep{height:1px;background:var(--border);margin:12px 0;}
+.pv-tag{padding:2px 7px;border-radius:5px;font-size:10px;background:var(--lime2);color:var(--lime);display:inline-flex;margin:2px;font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     AUTH PAGE
+══════════════════════════════════ -->
+<style>
+.auth-role-btn{padding:12px 8px;border-radius:10px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#fff;cursor:pointer;transition:all .18s;text-align:center;width:100%;}
+.auth-role-btn:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.07);}
+.auth-role-btn.on{border-color:rgba(170,255,0,.5);background:rgba(170,255,0,.07);box-shadow:0 0 0 3px rgba(170,255,0,.06);}
+@keyframes authFadeOut{from{opacity:1;transform:scale(1);}to{opacity:0;transform:scale(.97);}}
+</style>
+
+<div id="auth-screen" style="position:fixed;inset:0;z-index:99999;background:#060810;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',sans-serif;">
+  <!-- BG Effects -->
+  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
+    <div style="position:absolute;top:-200px;left:-200px;width:700px;height:700px;background:radial-gradient(ellipse,rgba(170,255,0,.055),transparent 65%);"></div>
+    <div style="position:absolute;bottom:-150px;right:-150px;width:600px;height:600px;background:radial-gradient(ellipse,rgba(72,112,255,.07),transparent 65%);"></div>
+    <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.35" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="dotgrid" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="rgba(255,255,255,.09)"/></pattern></defs><rect width="100%" height="100%" fill="url(#dotgrid)"/></svg>
+  </div>
+
+  <div style="position:relative;width:100%;max-width:420px;padding:24px;">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:34px;">
+      <div style="font-family:'Clash Display',sans-serif;font-size:34px;font-weight:700;color:#fff;letter-spacing:-.8px;line-height:1;">Shortlis<span style="color:#AAFF00;">8</span></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;letter-spacing:.2px;">AI-powered hiring infrastructure</div>
+    </div>
+
+    <!-- Card -->
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:30px;backdrop-filter:blur(20px);">
+
+      <!-- Tabs -->
+      <div style="display:flex;background:rgba(255,255,255,.05);border-radius:10px;padding:3px;margin-bottom:26px;">
+        <button id="auth-tab-in" onclick="authTab('in')" style="flex:1;padding:7px;border-radius:7px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;background:rgba(255,255,255,.09);color:#fff;font-family:inherit;">Sign in</button>
+        <button id="auth-tab-up" onclick="authTab('up')" style="flex:1;padding:7px;border-radius:7px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;background:transparent;color:rgba(255,255,255,.35);font-family:inherit;">Sign up</button>
+      </div>
+
+      <!-- Role picker -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.3);margin-bottom:9px;">I am a</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
+          <button class="auth-role-btn on" data-role="candidate" onclick="selectRole(this,'candidate')"><span style="font-size:17px;display:block;margin-bottom:3px;">👤</span><span style="font-size:11px;font-weight:600;display:block;">Candidate</span><span style="font-size:9px;color:rgba(255,255,255,.3);display:block;margin-top:1px;">Job seeker</span></button>
+          <button class="auth-role-btn" data-role="recruiter" onclick="selectRole(this,'recruiter')"><span style="font-size:17px;display:block;margin-bottom:3px;">🧑‍💼</span><span style="font-size:11px;font-weight:600;display:block;">Recruiter</span><span style="font-size:9px;color:rgba(255,255,255,.3);display:block;margin-top:1px;">Hiring team</span></button>
+          <button class="auth-role-btn" data-role="enterprise" onclick="selectRole(this,'enterprise')"><span style="font-size:17px;display:block;margin-bottom:3px;">🏢</span><span style="font-size:11px;font-weight:600;display:block;">Enterprise</span><span style="font-size:9px;color:rgba(255,255,255,.3);display:block;margin-top:1px;">HR / TA leader</span></button>
+          <button class="auth-role-btn" data-role="provider" onclick="selectRole(this,'provider')"><span style="font-size:17px;display:block;margin-bottom:3px;">⚙️</span><span style="font-size:11px;font-weight:600;display:block;">Provider Ops</span><span style="font-size:9px;color:rgba(255,255,255,.3);display:block;margin-top:1px;">Platform team</span></button>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:5px;">Email</label>
+        <input id="auth-email" type="email" placeholder="you@company.com" value="alex@acmecorp.com" style="width:100%;padding:11px 13px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;font-size:13px;color:#fff;outline:none;transition:border-color .15s;font-family:inherit;" onfocus="this.style.borderColor='rgba(170,255,0,.4)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"/>
+      </div>
+
+      <!-- Password -->
+      <div style="margin-bottom:22px;">
+        <label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:5px;">Password</label>
+        <input id="auth-pw" type="password" placeholder="••••••••" value="password" style="width:100%;padding:11px 13px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;font-size:13px;color:#fff;outline:none;transition:border-color .15s;font-family:inherit;" onfocus="this.style.borderColor='rgba(170,255,0,.4)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" onkeydown="if(event.key==='Enter')doSignIn()"/>
+      </div>
+
+      <!-- CTA -->
+      <button id="auth-cta" onclick="doSignIn()" style="width:100%;padding:13px;background:#AAFF00;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#060810;cursor:pointer;transition:all .18s;letter-spacing:.1px;font-family:inherit;" onmouseover="this.style.background='#BBFF22';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#AAFF00';this.style.transform='translateY(0)'">Sign in →</button>
+
+      <div style="text-align:center;margin-top:14px;font-size:11px;color:rgba(255,255,255,.2);">By continuing you agree to our <span style="color:rgba(170,255,0,.45);cursor:pointer;">Terms</span> &amp; <span style="color:rgba(170,255,0,.45);cursor:pointer;">Privacy</span></div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,.18);">Trusted by <span style="color:rgba(255,255,255,.4);font-weight:600;">320+ hiring teams</span> · 14,000 interviews conducted</div>
+  </div>
+</div>
+
+<!-- VIEW SWITCHER -->
+<div class="view-switcher" id="main-shell" style="display:none;">
+  <div class="sw-logo">Shortlis<span>8</span></div>
+  <div class="sw-tabs">
+    <button class="stab on" onclick="switchView('candidate',this)"><span class="stab-dot" style="background:#34D399;"></span>Candidate</button>
+    <button class="stab" onclick="switchView('recruiter',this)"><span class="stab-dot" style="background:var(--lime);"></span>Recruiter</button>
+    <button class="stab" onclick="switchView('enterprise',this)"><span class="stab-dot" style="background:#7B9FFF;"></span>Enterprise</button>
+    <button class="stab" onclick="switchView('provider',this)"><span class="stab-dot" style="background:var(--amber);"></span>Provider · Ops</button>
+  </div>
+  <div class="sw-right" id="sw-user-name">4 platform views</div>
+</div>
+
+<!-- ══════════════════════════════════
+     VIEW 1 — CANDIDATE
+══════════════════════════════════ -->
+<div class="view on" id="v-candidate">
+  <div class="cv-nav">
+    <div class="cv-brand">Shortlis<span>8</span><span class="cv-brand-tag">Candidate</span></div>
+    <div class="cv-tabs">
+      <button class="cv-tab on" onclick="cvPage('home',this)">Home</button>
+      <button class="cv-tab" onclick="cvPage('interview',this)">My Interview</button>
+      <button class="cv-tab" onclick="cvPage('result',this)">Results</button>
+    </div>
+    <div class="cv-nav-right">
+      <div class="cv-name-block"><div class="cv-uname">Alex Chen</div><div class="cv-urole">Candidate — Acme Corp</div></div>
+      <div class="cv-avatar">AC</div>
+    </div>
+  </div>
+  <div class="cv-body">
+    <div class="cv-sidebar">
+      <div class="cv-sb-group" style="margin-top:0;">My Journey</div>
+      <button class="cv-sb-item on" onclick="cvPage('home',this)"><span class="cv-sb-ico">🏠</span>Overview</button>
+      <button class="cv-sb-item" onclick="cvPage('interview',this)"><span class="cv-sb-ico">🎙️</span>My Interview<span class="cv-sb-badge">1</span></button>
+      <button class="cv-sb-item" onclick="cvPage('result',this)"><span class="cv-sb-ico">📊</span>Results</button>
+      <div class="cv-sb-group">Preparation</div>
+      <button class="cv-sb-item"><span class="cv-sb-ico">📖</span>Interview Tips</button>
+      <button class="cv-sb-item"><span class="cv-sb-ico">❓</span>FAQs</button>
+      <button class="cv-sb-item"><span class="cv-sb-ico">📞</span>Support</button>
+      <div style="margin-top:auto;padding:14px 8px;border-top:1px solid #E4E6F0;">
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(170,255,0,.06);border-radius:9px;border:1px solid rgba(170,255,0,.15);">
+          <div style="font-size:16px;">💡</div>
+          <div style="font-size:11px;color:#1A1D2E;line-height:1.4;font-weight:500;">Tip: Be specific. Real examples with numbers win every time.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cv-content">
+      <!-- HOME PAGE -->
+      <div class="cv-page on" id="cv-pg-home">
+        <div class="cv-hero">
+          <div class="cv-hero-inner">
+            <div class="cv-hero-greeting">Welcome back, Alex 👋</div>
+            <div class="cv-hero-title">Your AI interview is ready.<br>Take it when you feel prepared.</div>
+            <div class="cv-hero-sub">An AI interviewer will conduct a voice interview — 5 tailored questions, about 12 minutes. No interruptions.</div>
+            <div class="cv-hero-steps">
+              <div class="cv-hero-step"><div class="cv-hero-step-num">01</div><div class="cv-hero-step-text">Find a quiet place with good lighting</div></div>
+              <div class="cv-hero-step"><div class="cv-hero-step-num">02</div><div class="cv-hero-step-text">Allow camera & mic when prompted</div></div>
+              <div class="cv-hero-step"><div class="cv-hero-step-num">03</div><div class="cv-hero-step-text">Answer naturally — be specific & confident</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="journey-track">
+          <div class="journey-node"><div class="journey-circle done">✓</div><div class="journey-label done">Invited</div></div>
+          <div class="journey-line done"></div>
+          <div class="journey-node"><div class="journey-circle done">✓</div><div class="journey-label done">Profile Set</div></div>
+          <div class="journey-line done"></div>
+          <div class="journey-node"><div class="journey-circle active">●</div><div class="journey-label active">Interview</div></div>
+          <div class="journey-line"></div>
+          <div class="journey-node"><div class="journey-circle">○</div><div class="journey-label">Results</div></div>
+          <div class="journey-line"></div>
+          <div class="journey-node"><div class="journey-circle">○</div><div class="journey-label">Decision</div></div>
+        </div>
+
+        <div class="invite-card">
+          <div class="invite-card-ico">💼</div>
+          <div class="invite-card-body">
+            <div class="invite-card-company">Acme Corp</div>
+            <div class="invite-card-title">Senior Software Engineer</div>
+            <div class="invite-card-meta">Platform Engineering · Remote · Full-time</div>
+            <div class="invite-card-tags">
+              <span class="cv-tag-dark">Python</span>
+              <span class="cv-tag-dark">Distributed Systems</span>
+              <span class="cv-tag">Leadership</span>
+              <span class="cv-tag">System Design</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;flex-shrink:0;">
+            <button class="cv-btn cv-btn-primary" onclick="openRoom()">🎙️ Start Interview</button>
+            <button class="cv-btn cv-btn-ghost">Read Job Brief</button>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #E4E6F0;border-radius:14px;padding:20px;">
+          <div style="font-family:'Clash Display',sans-serif;font-size:14px;font-weight:600;color:#1A1D2E;margin-bottom:12px;">Before you begin</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="display:flex;gap:9px;align-items:start;padding:10px;background:#F7F8FC;border-radius:9px;font-size:12px;">
+              <span style="font-size:16px;">🎙️</span><div><div style="font-weight:600;margin-bottom:2px;color:#1A1D2E;">Voice + Video interview</div><div style="color:#5E6899;">Speak your answers naturally. The AI listens and follows up.</div></div>
+            </div>
+            <div style="display:flex;gap:9px;align-items:start;padding:10px;background:#F7F8FC;border-radius:9px;font-size:12px;">
+              <span style="font-size:16px;">⏱️</span><div><div style="font-weight:600;margin-bottom:2px;color:#1A1D2E;">~12 minutes total</div><div style="color:#5E6899;">5 questions. Adaptive follow-ups. Take your time.</div></div>
+            </div>
+            <div style="display:flex;gap:9px;align-items:start;padding:10px;background:#F7F8FC;border-radius:9px;font-size:12px;">
+              <span style="font-size:16px;">🔒</span><div><div style="font-weight:600;margin-bottom:2px;color:#1A1D2E;">Private & secure</div><div style="color:#5E6899;">Recording is shared only with the hiring team at Acme.</div></div>
+            </div>
+            <div style="display:flex;gap:9px;align-items:start;padding:10px;background:#F7F8FC;border-radius:9px;font-size:12px;">
+              <span style="font-size:16px;">📊</span><div><div style="font-weight:600;margin-bottom:2px;color:#1A1D2E;">Instant results</div><div style="color:#5E6899;">Your score and feedback are ready within minutes.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTERVIEW INFO PAGE -->
+      <div class="cv-page" id="cv-pg-interview">
+        <div style="font-family:'Clash Display',sans-serif;font-size:22px;font-weight:700;color:#1A1D2E;margin-bottom:4px;letter-spacing:-.3px;">Your Interview</div>
+        <div style="font-size:13px;color:#78716C;margin-bottom:22px;">Senior Software Engineer · Acme Corp</div>
+        <div style="background:#fff;border:1px solid #E4E6F0;border-radius:14px;padding:24px;margin-bottom:16px;">
+          <div style="font-family:'Clash Display',sans-serif;font-size:15px;font-weight:600;color:#1A1D2E;margin-bottom:16px;">What to Expect</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#F7F8FC;border-radius:10px;font-size:13px;">
+              <div style="width:32px;height:32px;border-radius:8px;background:#080A0E;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--lime);flex-shrink:0;">🔧</div>
+              <div><div style="font-weight:600;color:#1A1D2E;">Technical Questions (2)</div><div style="color:#5E6899;font-size:12px;">Distributed systems, architecture, scale challenges</div></div>
+              <span class="ev-pill ev-pill-blue" style="margin-left:auto;">2 Qs</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#F7F8FC;border-radius:10px;font-size:13px;">
+              <div style="width:32px;height:32px;border-radius:8px;background:#080A0E;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--lime);flex-shrink:0;">💬</div>
+              <div><div style="font-weight:600;color:#1A1D2E;">Behavioural Questions (2)</div><div style="color:#5E6899;font-size:12px;">Leadership, conflict, decision-making under pressure</div></div>
+              <span class="ev-pill ev-pill-blue" style="margin-left:auto;">2 Qs</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#F7F8FC;border-radius:10px;font-size:13px;">
+              <div style="width:32px;height:32px;border-radius:8px;background:#080A0E;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--lime);flex-shrink:0;">🎯</div>
+              <div><div style="font-weight:600;color:#1A1D2E;">Situational Question (1)</div><div style="color:#5E6899;font-size:12px;">30-60-90 day plan, role-specific scenario</div></div>
+              <span class="ev-pill ev-pill-blue" style="margin-left:auto;">1 Q</span>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;padding:10px 0;">
+          <button class="cv-btn cv-btn-primary" style="padding:13px 36px;font-size:14px;" onclick="openRoom()">🎙️ Start Interview Now</button>
+          <div style="font-size:11px;color:#A8A29E;margin-top:10px;">Takes approximately 12 minutes</div>
+        </div>
+      </div>
+
+      <!-- RESULTS PAGE -->
+      <div class="cv-page" id="cv-pg-result">
+        <div class="cv-result-hero">
+          <div style="position:relative;z-index:1;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--lime);opacity:.7;margin-bottom:8px;">Interview Complete</div>
+            <div style="display:flex;align-items:baseline;gap:12px;">
+              <div class="cv-result-score">88</div>
+              <div><div style="font-size:18px;color:rgba(255,255,255,.5);">/100</div><div class="cv-result-verdict">Strong Hire Recommendation</div></div>
+            </div>
+            <div class="cv-result-msg">Excellent performance. Your distributed systems answers were highly specific and directly relevant to the role. The hiring team has been notified.</div>
+          </div>
+        </div>
+        <div class="cv-feedback-card">
+          <div class="cv-feedback-title">Your Dimension Scores</div>
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px;"><span style="width:130px;color:#5E6899;">Technical Depth</span><div style="flex:1;height:5px;background:#F0F2F8;border-radius:3px;overflow:hidden;"><div style="width:91%;height:100%;background:#080A0E;border-radius:3px;"></div></div><span style="font-family:'Geist Mono',monospace;font-weight:700;color:#1A1D2E;width:28px;text-align:right;">91</span></div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px;"><span style="width:130px;color:#5E6899;">Communication</span><div style="flex:1;height:5px;background:#F0F2F8;border-radius:3px;overflow:hidden;"><div style="width:85%;height:100%;background:#4870FF;border-radius:3px;"></div></div><span style="font-family:'Geist Mono',monospace;font-weight:700;color:#1A1D2E;width:28px;text-align:right;">85</span></div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px;"><span style="width:130px;color:#5E6899;">Problem Solving</span><div style="flex:1;height:5px;background:#F0F2F8;border-radius:3px;overflow:hidden;"><div style="width:88%;height:100%;background:#7C3AED;border-radius:3px;"></div></div><span style="font-family:'Geist Mono',monospace;font-weight:700;color:#1A1D2E;width:28px;text-align:right;">88</span></div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px;"><span style="width:130px;color:#5E6899;">Leadership</span><div style="flex:1;height:5px;background:#F0F2F8;border-radius:3px;overflow:hidden;"><div style="width:82%;height:100%;background:var(--amber);border-radius:3px;"></div></div><span style="font-family:'Geist Mono',monospace;font-weight:700;color:#1A1D2E;width:28px;text-align:right;">82</span></div>
+          </div>
+        </div>
+        <div class="cv-feedback-card">
+          <div class="cv-feedback-title">Feedback Highlights</div>
+          <div class="cv-feedback-item"><span style="color:#1A1D2E;font-size:16px;flex-shrink:0;">✓</span>Technical depth on distributed systems was impressive and directly relevant.</div>
+          <div class="cv-feedback-item"><span style="color:#1A1D2E;font-size:16px;flex-shrink:0;">✓</span>Communication was clear, structured and confident throughout.</div>
+          <div class="cv-feedback-item"><span style="color:#D97706;font-size:16px;flex-shrink:0;">→</span>Leadership answers could be more specific — mention team sizes and outcomes.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E4E6F0;border-radius:14px;padding:20px;text-align:center;">
+          <div style="font-family:'Clash Display',sans-serif;font-size:16px;font-weight:600;margin-bottom:5px;color:#1A1D2E;">What Happens Next?</div>
+          <div style="font-size:13px;color:#78716C;margin-bottom:16px;">The hiring team at Acme Corp has received your results. You should hear back within 24–48 hours.</div>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <button class="cv-btn cv-btn-primary">📧 Email Me My Results</button>
+            <button class="cv-btn cv-btn-ghost">View Full Transcript</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /cv-content -->
+  </div>
+
+  <!-- VIDEO ROOM -->
+  <div class="cv-room" id="cv-room">
+    <div class="cv-room-bar">
+      <div class="cv-room-brand">Shortlis<span>8</span></div>
+      <div style="font-size:11px;color:rgba(255,255,255,.3);">Senior Software Engineer · Acme Corp</div>
+      <div class="cv-room-rec" style="margin-left:auto;">
+        <div class="rec-pulse"></div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);">REC</div>
+        <div style="font-family:'Geist Mono',monospace;font-size:12px;color:rgba(255,255,255,.65);" id="cv-timer">00:00</div>
+        <button onclick="closeRoom()" style="margin-left:12px;padding:4px 11px;border:1px solid rgba(255,77,77,.25);background:rgba(255,77,77,.08);color:#F87171;border-radius:6px;font-size:11px;cursor:pointer;">End</button>
+      </div>
+    </div>
+    <div class="cv-room-stage">
+      <div class="cv-ai-tile">
+        <div class="cv-ai-bg"></div>
+        <div class="cv-q-overlay" id="cv-q-overlay" style="display:none;">
+          <div class="cv-q-badge" id="cv-q-badge">🔧 Technical · Q1 of 5</div>
+          <div class="cv-q-text" id="cv-q-text">Preparing your question…</div>
+        </div>
+        <div class="ai-interviewer-core">
+          <div style="position:relative;">
+            <div class="ai-core-ring"></div><div class="ai-core-ring"></div><div class="ai-core-ring"></div>
+            <div class="ai-core-orb">S8</div>
+          </div>
+          <div class="ai-voice-wave" id="cv-ai-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div style="font-family:'Clash Display',sans-serif;font-size:14px;color:rgba(255,255,255,.7);letter-spacing:-.2px;">Shortlis8 Interviewer</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.3);" id="cv-ai-status">Connecting…</div>
+        </div>
+        <div class="ai-name-chip">Shortlis8 AI</div>
+        <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:3px 10px;font-size:10px;color:rgba(255,255,255,.5);" id="cv-room-status">Q 0 / 5</div>
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,.04);"><div id="cv-room-progress" style="height:100%;background:linear-gradient(90deg,var(--lime),rgba(170,255,0,.5));transition:width .5s;width:0%;"></div></div>
+      </div>
+      <div class="cv-self-panel">
+        <div class="cv-self-tile">
+          <video id="cv-self-vid" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none;"></video>
+          <div class="cv-self-cam-off" id="cv-self-placeholder"><div class="cv-self-av" id="cv-self-initials">AC</div><div style="font-size:10px;color:rgba(255,255,255,.2);">Camera off</div></div>
+          <div class="cv-self-name">You</div>
+        </div>
+        <div class="cv-signal-card">
+          <div class="cv-signal-title">Live Signals</div>
+          <div class="cv-signal-bar"><div class="cv-signal-bar-header"><span class="cv-signal-bar-label">Technical</span><span class="cv-signal-bar-val" id="cv-ls-tv">—</span></div><div class="cv-sig-bg"><div class="cv-sig-fill" id="cv-ls-t" style="width:0%;background:#34D399;"></div></div></div>
+          <div class="cv-signal-bar"><div class="cv-signal-bar-header"><span class="cv-signal-bar-label">Clarity</span><span class="cv-signal-bar-val" id="cv-ls-cv">—</span></div><div class="cv-sig-bg"><div class="cv-sig-fill" id="cv-ls-c" style="width:0%;background:var(--lime);"></div></div></div>
+          <div class="cv-signal-bar"><div class="cv-signal-bar-header"><span class="cv-signal-bar-label">Depth</span><span class="cv-signal-bar-val" id="cv-ls-dv">—</span></div><div class="cv-sig-bg"><div class="cv-sig-fill" id="cv-ls-d" style="width:0%;background:#A78BFA;"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cv-answer-bar hidden" id="cv-answer-bar">
+      <textarea class="cv-ans-input" id="cv-ans-input" placeholder="Speak your answer or type here… (Enter to send)" rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();cvSubmitAns();}"></textarea>
+      <button class="cv-ans-send" onclick="cvSubmitAns()">Send ↵</button>
+    </div>
+    <div class="cv-room-controls">
+      <div class="cv-ctrl"><button class="cv-ctrl-btn" id="cv-btn-mic" onclick="cvToggleMic()">🎙️</button><div class="cv-ctrl-lbl">Mic</div></div>
+      <div class="cv-ctrl"><button class="cv-ctrl-btn" id="cv-btn-cam" onclick="cvToggleCam()">📷</button><div class="cv-ctrl-lbl">Cam</div></div>
+      <div style="width:1px;height:28px;background:rgba(255,255,255,.07);margin:0 4px;"></div>
+      <div class="cv-ctrl"><button class="cv-ctrl-btn end" onclick="closeRoom()">📞</button><div class="cv-ctrl-lbl" style="color:rgba(239,68,68,.5);">End</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     VIEW 2 — RECRUITER
+══════════════════════════════════ -->
+<div class="view" id="v-recruiter">
+  <div class="rv-topbar">
+    <div class="rv-brand">Shortlis<span>8</span></div>
+    <div class="rv-tabs">
+      <button class="rv-tab on" onclick="rvPage('pipeline',this)">Pipeline</button>
+      <button class="rv-tab" onclick="rvPage('upload',this)">Upload</button>
+      <button class="rv-tab" onclick="rvPage('candidates',this)">Candidates</button>
+      <button class="rv-tab" onclick="rvPage('reports',this)">Reports</button>
+    </div>
+    <div class="rv-topbar-right">
+      <div class="rv-notif">🔔<div class="rv-notif-dot"></div></div>
+      <div class="rv-ublock"><div class="rv-uname">Sarah Johnson</div><div class="rv-urole">Senior Recruiter · Acme</div></div>
+      <div class="rv-avatar">SJ</div>
+    </div>
+  </div>
+  <div class="rv-body">
+    <div class="rv-sidebar">
+      <div class="rv-sidebar-section" style="margin-top:0;">Workspace</div>
+      <button class="rv-sidebar-item on" onclick="rvPage('pipeline',this)" id="rvs-pipeline"><span class="rv-sidebar-ico">⚡</span>Command Center</button>
+      <button class="rv-sidebar-item" onclick="rvPage('upload',this)" id="rvs-upload"><span class="rv-sidebar-ico">📤</span>Upload Resumes</button>
+      <button class="rv-sidebar-item"><span class="rv-sidebar-ico">🔗</span>Interview Links</button>
+      <div class="rv-sidebar-section">Candidates</div>
+      <button class="rv-sidebar-item" onclick="rvPage('candidates',this)" id="rvs-candidates"><span class="rv-sidebar-ico">👥</span>All Candidates<span class="rv-sb-badge">47</span></button>
+      <button class="rv-sidebar-item"><span class="rv-sidebar-ico">⏳</span>In Progress<span class="rv-sb-badge amber">3</span></button>
+      <button class="rv-sidebar-item"><span class="rv-sidebar-ico">⭐</span>Shortlisted<span class="rv-sb-badge green">12</span></button>
+      <div class="rv-sidebar-section">Reports</div>
+      <button class="rv-sidebar-item" onclick="rvPage('reports',this)" id="rvs-reports"><span class="rv-sidebar-ico">📊</span>Analytics</button>
+      <button class="rv-sidebar-item"><span class="rv-sidebar-ico">📋</span>Campaigns<span class="rv-sb-badge">3</span></button>
+      <div class="rv-sidebar-section">Settings</div>
+      <button class="rv-sidebar-item"><span class="rv-sidebar-ico">⚙️</span>Preferences</button>
+      <button class="rv-sidebar-item"><span class="rv-sidebar-ico">🔗</span>Integrations</button>
+      <div class="rv-agent-strip">
+        <div class="rv-agent-strip-title">Agent Status</div>
+        <div class="rv-agent-row"><span class="rv-agent-ico">🎭</span><span class="rv-agent-lbl">Orchestrator</span><span class="rv-agent-state" id="rv-ag-orch">Idle</span><div class="rv-agent-dot" id="rv-agd-orch"></div></div>
+        <div class="rv-agent-row"><span class="rv-agent-ico">📄</span><span class="rv-agent-lbl">Resume Parser</span><span class="rv-agent-state" id="rv-ag-parse">—</span><div class="rv-agent-dot" id="rv-agd-parse"></div></div>
+        <div class="rv-agent-row"><span class="rv-agent-ico">💡</span><span class="rv-agent-lbl">Question Gen</span><span class="rv-agent-state" id="rv-ag-qgen">—</span><div class="rv-agent-dot" id="rv-agd-qgen"></div></div>
+        <div class="rv-agent-row"><span class="rv-agent-ico">🎙️</span><span class="rv-agent-lbl">Interviewer</span><span class="rv-agent-state" id="rv-ag-ivr">—</span><div class="rv-agent-dot" id="rv-agd-ivr"></div></div>
+        <div class="rv-agent-row"><span class="rv-agent-ico">🔬</span><span class="rv-agent-lbl">Analyst</span><span class="rv-agent-state" id="rv-ag-ana">—</span><div class="rv-agent-dot" id="rv-agd-ana"></div></div>
+      </div>
+    </div>
+
+    <div class="rv-content">
+      <!-- PIPELINE PAGE -->
+      <div class="rv-page on" id="rv-pg-pipeline">
+        <div class="rv-cmd-hero">
+          <div class="rv-stat-block"><div class="rv-stat-val" style="color:var(--lime);">47</div><div class="rv-stat-sub">Total Screened</div><div class="rv-stat-delta up">↑ 18% this month</div></div>
+          <div class="rv-stat-block"><div class="rv-stat-val" style="color:#34D399;">12</div><div class="rv-stat-sub">Shortlisted</div><div class="rv-stat-delta up">25.5% pass rate</div></div>
+          <div class="rv-stat-block"><div class="rv-stat-val" style="color:var(--amber);">3</div><div class="rv-stat-sub">Live Right Now</div><div class="rv-stat-delta live">● Active sessions</div></div>
+          <div class="rv-stat-block"><div class="rv-stat-val">6.8<span style="font-size:16px;color:var(--text3);">m</span></div><div class="rv-stat-sub">Avg Screen Time</div><div class="rv-stat-delta up">↓ 71% vs manual</div></div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:14px;font-weight:700;">Kanban Pipeline</div>
+          <div style="display:flex;gap:7px;">
+            <button class="rv-btn rv-btn-ghost" onclick="rvPage('upload',null)">📤 Upload Resumes</button>
+            <button class="rv-btn rv-btn-p">⚡ Launch Batch</button>
+          </div>
+        </div>
+
+        <div class="rv-pipeline">
+          <div class="rv-pipe-col">
+            <div class="rv-pipe-col-head"><div class="rv-pipe-col-title">Uploaded</div><div class="rv-pipe-count">8</div></div>
+            <div class="rv-pipe-card"><div class="rv-pipe-card-name">Nikhil Sharma</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score"><span class="rv-pipe-card-dot" style="background:var(--blue);"></span>Parsing…</div></div>
+            <div class="rv-pipe-card"><div class="rv-pipe-card-name">Elena Kowalski</div><div class="rv-pipe-card-role">DevOps Eng.</div><div class="rv-pipe-card-score"><span class="rv-pipe-card-dot" style="background:var(--blue);"></span>Queued</div></div>
+            <div class="rv-pipe-card"><div class="rv-pipe-card-name">Marcus Webb</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score"><span class="rv-pipe-card-dot" style="background:rgba(255,255,255,.15);"></span>Queued</div></div>
+          </div>
+          <div class="rv-pipe-col">
+            <div class="rv-pipe-col-head"><div class="rv-pipe-col-title">Invited</div><div class="rv-pipe-count">14</div></div>
+            <div class="rv-pipe-card"><div class="rv-pipe-card-name">James Miller</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score" style="color:var(--amber);"><span class="rv-pipe-card-dot" style="background:var(--amber);"></span>Awaiting</div></div>
+            <div class="rv-pipe-card"><div class="rv-pipe-card-name">Yuki Tanaka</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score" style="color:var(--amber);"><span class="rv-pipe-card-dot" style="background:var(--amber);"></span>Awaiting</div></div>
+          </div>
+          <div class="rv-pipe-col">
+            <div class="rv-pipe-col-head"><div class="rv-pipe-col-title">In Interview</div><div class="rv-pipe-count" style="background:rgba(52,211,153,.1);color:#34D399;">3</div></div>
+            <div class="rv-pipe-card" style="border-color:rgba(170,255,0,.25);"><div class="rv-pipe-card-name">Alex Chen</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score" style="color:var(--lime);"><span class="rv-pipe-card-dot" style="background:var(--lime);animation:pulse .8s infinite;"></span>Live · Q3/5</div></div>
+            <div class="rv-pipe-card" style="border-color:rgba(170,255,0,.15);"><div class="rv-pipe-card-name">Priya Kumar</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score" style="color:var(--lime);"><span class="rv-pipe-card-dot" style="background:var(--lime);animation:pulse .8s infinite .4s;"></span>Live · Q1/5</div></div>
+          </div>
+          <div class="rv-pipe-col">
+            <div class="rv-pipe-col-head"><div class="rv-pipe-col-title">Under Review</div><div class="rv-pipe-count">22</div></div>
+            <div class="rv-pipe-card"><div class="rv-pipe-card-name">Fatima Al-Rashid</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score" style="color:var(--amber);"><span class="rv-pipe-card-dot" style="background:var(--amber);"></span>Score: 64</div></div>
+            <div class="rv-pipe-card"><div class="rv-pipe-card-name">Carlos Mendez</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score" style="color:var(--red);"><span class="rv-pipe-card-dot" style="background:var(--red);"></span>Score: 42</div></div>
+          </div>
+          <div class="rv-pipe-col">
+            <div class="rv-pipe-col-head"><div class="rv-pipe-col-title">Decided</div><div class="rv-pipe-count">12</div></div>
+            <div class="rv-pipe-card" onclick="rvOpenDetail()"><div class="rv-pipe-card-name">Alex Chen</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score" style="color:#34D399;"><span class="rv-pipe-card-dot" style="background:#34D399;"></span>✅ Strong Hire · 88</div></div>
+            <div class="rv-pipe-card"><div class="rv-pipe-card-name">Priya Kumar</div><div class="rv-pipe-card-role">Sr. Engineer</div><div class="rv-pipe-card-score" style="color:#34D399;"><span class="rv-pipe-card-dot" style="background:#34D399;"></span>✓ Hire · 76</div></div>
+          </div>
+        </div>
+
+        <div class="rv-table-wrap">
+          <div class="rv-table-header">
+            <div class="rv-table-title">All Candidates</div>
+            <div class="rv-search"><span style="color:var(--text3);">🔍</span><input placeholder="Search by name, role, score…"/></div>
+            <div class="rv-filter-btns">
+              <button class="rv-filter-btn on">All</button>
+              <button class="rv-filter-btn">Strong Hire</button>
+              <button class="rv-filter-btn">Hire</button>
+              <button class="rv-filter-btn">Maybe</button>
+              <button class="rv-filter-btn">No Hire</button>
+            </div>
+          </div>
+          <table class="rv-tbl">
+            <thead><tr><th>Candidate</th><th>Role</th><th>Status</th><th>Score</th><th>Technical</th><th>Comm.</th><th>Verdict</th><th>Duration</th><th></th></tr></thead>
+            <tbody>
+              <tr onclick="rvOpenDetail()"><td><div style="font-weight:600;">Alex Chen</div><div style="color:var(--text3);font-size:10px;">Stripe · 8 yrs</div></td><td>Sr. Software Eng.</td><td><span class="rv-pill rv-pill-green">Complete</span></td><td><div class="rv-score-chip rv-score-hi">88</div></td><td style="color:#34D399;font-size:11px;font-weight:700;">91</td><td style="font-size:11px;">85</td><td><span class="rv-pill rv-pill-green">Strong Hire</span></td><td style="color:var(--text3);font-size:11px;">7.2m</td><td><div class="rv-row-actions"><button class="rv-act-btn" onclick="rvOpenDetail();event.stopPropagation()">View</button><button class="rv-act-btn green">⭐</button></div></td></tr>
+              <tr><td><div style="font-weight:600;">Priya Kumar</div><div style="color:var(--text3);font-size:10px;">Amazon · 6 yrs</div></td><td>Sr. Software Eng.</td><td><span class="rv-pill rv-pill-green">Complete</span></td><td><div class="rv-score-chip rv-score-hi">76</div></td><td style="color:var(--amber);font-size:11px;font-weight:700;">78</td><td style="font-size:11px;">79</td><td><span class="rv-pill rv-pill-blue">Hire</span></td><td style="color:var(--text3);font-size:11px;">6.8m</td><td><div class="rv-row-actions"><button class="rv-act-btn">View</button><button class="rv-act-btn green">⭐</button></div></td></tr>
+              <tr><td><div style="font-weight:600;">James Miller</div><div style="color:var(--text3);font-size:10px;">Netflix · 7 yrs</div></td><td>Sr. Software Eng.</td><td><span class="rv-pill rv-pill-blue">In Progress</span></td><td><div class="rv-score-chip rv-score-na">—</div></td><td>—</td><td>—</td><td><span class="rv-pill rv-pill-gray">Pending</span></td><td style="color:var(--text3);font-size:11px;">—</td><td><div class="rv-row-actions"><button class="rv-act-btn">Watch Live</button></div></td></tr>
+              <tr><td><div style="font-weight:600;">Fatima Al-Rashid</div><div style="color:var(--text3);font-size:10px;">Microsoft · 9 yrs</div></td><td>Sr. Software Eng.</td><td><span class="rv-pill rv-pill-green">Complete</span></td><td><div class="rv-score-chip rv-score-mid">64</div></td><td style="color:var(--amber);font-size:11px;font-weight:700;">68</td><td style="font-size:11px;">60</td><td><span class="rv-pill rv-pill-amber">Maybe</span></td><td style="color:var(--text3);font-size:11px;">8.1m</td><td><div class="rv-row-actions"><button class="rv-act-btn">View</button></div></td></tr>
+              <tr><td><div style="font-weight:600;">Carlos Mendez</div><div style="color:var(--text3);font-size:10px;">Shopify · 5 yrs</div></td><td>Sr. Software Eng.</td><td><span class="rv-pill rv-pill-green">Complete</span></td><td><div class="rv-score-chip rv-score-lo">42</div></td><td style="color:var(--red);font-size:11px;font-weight:700;">38</td><td style="font-size:11px;">52</td><td><span class="rv-pill rv-pill-red">No Hire</span></td><td style="color:var(--text3);font-size:11px;">5.4m</td><td><div class="rv-row-actions"><button class="rv-act-btn">View</button></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- UPLOAD PAGE -->
+      <div class="rv-page" id="rv-pg-upload">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Upload Resumes</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Bulk upload — agents parse, generate voice interview questions, and send invitations automatically</div>
+        <div class="rv-upload-layout">
+          <div>
+            <div class="rv-card mb14">
+              <div class="rv-card-title">📋 Job Configuration</div>
+              <div class="rv-g2"><div class="rv-fg"><label class="rv-fl">Job Title</label><input class="rv-fi" value="Senior Software Engineer"/></div><div class="rv-fg"><label class="rv-fl">Department</label><input class="rv-fi" value="Platform Engineering"/></div></div>
+              <div class="rv-g2"><div class="rv-fg"><label class="rv-fl">Experience</label><select class="rv-fi"><option>Junior</option><option>Mid-level</option><option selected>Senior</option><option>Staff+</option></select></div><div class="rv-fg"><label class="rv-fl">Interview Tone</label><select class="rv-fi"><option>Conversational</option><option selected>Professional</option><option>Rigorous</option></select></div></div>
+              <div class="rv-fg"><label class="rv-fl">Interview Type</label><select class="rv-fi" style="max-width:200px;"><option selected>Voice Interview</option><option>Video Interview</option><option>Voice + Video</option></select></div>
+              <div class="rv-fg"><label class="rv-fl">Questions Per Candidate</label><select class="rv-fi" style="max-width:200px;"><option>3 — Quick</option><option selected>5 — Standard</option><option>7 — Deep</option></select></div>
+              <div class="rv-fg" style="margin-bottom:0;"><label class="rv-fl">Key Requirements</label><input class="rv-fi" value="Python, System Design, Distributed Systems, Leadership"/></div>
+            </div>
+            <div class="rv-card">
+              <div class="rv-card-title">⚙️ Pipeline Automation</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);"><input type="checkbox" checked style="accent-color:var(--lime);"/> Auto-parse resume on upload</label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);"><input type="checkbox" checked style="accent-color:var(--lime);"/> Email voice interview invite to candidate</label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);"><input type="checkbox" checked style="accent-color:var(--lime);"/> Generate shortlist report after interview</label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);"><input type="checkbox" style="accent-color:var(--lime);"/> Slack notification on completion</label>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="rv-card mb14">
+              <div class="rv-card-title">📤 Drop Resumes</div>
+              <div class="rv-drop"><div class="rv-drop-icon">📄</div><div class="rv-drop-title">Drop PDF / DOCX here</div><div class="rv-drop-sub">Up to 100 files · Max 5MB each</div></div>
+              <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
+                <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.14);border-radius:7px;font-size:11px;"><span>📄</span><span style="flex:1;font-weight:500;">alex_chen_resume.pdf</span><span class="rv-pill rv-pill-green">Queued</span></div>
+                <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.14);border-radius:7px;font-size:11px;"><span>📄</span><span style="flex:1;font-weight:500;">priya_kumar_cv.pdf</span><span class="rv-pill rv-pill-green">Queued</span></div>
+                <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--lime3);border:1px solid rgba(170,255,0,.15);border-radius:7px;font-size:11px;"><span>📄</span><span style="flex:1;font-weight:500;">james_miller.docx</span><div style="width:7px;height:7px;border-radius:50%;background:var(--lime);animation:pulse .8s infinite;"></div><span style="color:var(--lime);font-size:10px;">Parsing…</span></div>
+              </div>
+            </div>
+            <div class="rv-card" style="background:var(--lime3);border-color:rgba(170,255,0,.2);">
+              <div class="rv-card-title" style="color:var(--lime);">🚀 Ready: 3 Files</div>
+              <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.65;">Agents will parse all resumes, generate tailored voice interview questions, and send invitations.</div>
+              <button class="rv-btn rv-btn-p" style="width:100%;justify-content:center;" onclick="rvSimulatePipeline()">⚡ Launch Pipeline for All</button>
+              <div id="rv-pipeline-status" style="font-size:10px;color:var(--text3);text-align:center;margin-top:7px;min-height:14px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CANDIDATES PAGE -->
+      <div class="rv-page" id="rv-pg-candidates">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="font-size:15px;font-weight:700;">All Candidates <span style="font-size:12px;color:var(--text3);font-weight:400;">(47)</span></div>
+          <div class="rv-filter-btns"><button class="rv-filter-btn on">All</button><button class="rv-filter-btn">Strong Hire</button><button class="rv-filter-btn">Hire</button><button class="rv-filter-btn">Maybe</button><button class="rv-filter-btn">No Hire</button><button class="rv-filter-btn">Pending</button></div>
+        </div>
+        <div class="rv-table-wrap">
+          <table class="rv-tbl">
+            <thead><tr><th>Candidate</th><th>Role</th><th>Status</th><th>Score</th><th>Tech</th><th>Comm</th><th>Lead</th><th>Verdict</th><th>Date</th><th></th></tr></thead>
+            <tbody>
+              <tr onclick="rvOpenDetail()"><td><div style="font-weight:600;">Alex Chen</div><div style="color:var(--text3);font-size:10px;">Stripe · 8yrs · MIT</div></td><td style="font-size:11px;">Sr. Software Eng.</td><td><span class="rv-pill rv-pill-green">Complete</span></td><td><div class="rv-score-chip rv-score-hi">88</div></td><td style="color:#34D399;font-size:11px;font-weight:700;">91</td><td style="font-size:11px;">85</td><td style="font-size:11px;">82</td><td><span class="rv-pill rv-pill-green">Strong Hire</span></td><td style="font-size:10px;color:var(--text3);">Today</td><td><div class="rv-row-actions"><button class="rv-act-btn" onclick="rvOpenDetail();event.stopPropagation()">Report</button><button class="rv-act-btn green">⭐</button></div></td></tr>
+              <tr><td><div style="font-weight:600;">Priya Kumar</div><div style="color:var(--text3);font-size:10px;">Amazon · 6yrs</div></td><td style="font-size:11px;">Sr. Software Eng.</td><td><span class="rv-pill rv-pill-green">Complete</span></td><td><div class="rv-score-chip rv-score-hi">76</div></td><td style="color:var(--amber);font-size:11px;font-weight:700;">78</td><td style="font-size:11px;">79</td><td style="font-size:11px;">74</td><td><span class="rv-pill rv-pill-blue">Hire</span></td><td style="font-size:10px;color:var(--text3);">Today</td><td><div class="rv-row-actions"><button class="rv-act-btn">Report</button><button class="rv-act-btn green">⭐</button></div></td></tr>
+              <tr><td><div style="font-weight:600;">Fatima Al-Rashid</div><div style="color:var(--text3);font-size:10px;">Microsoft · 9yrs</div></td><td style="font-size:11px;">Sr. Software Eng.</td><td><span class="rv-pill rv-pill-green">Complete</span></td><td><div class="rv-score-chip rv-score-mid">64</div></td><td style="color:var(--amber);font-size:11px;font-weight:700;">68</td><td style="font-size:11px;">60</td><td style="font-size:11px;">65</td><td><span class="rv-pill rv-pill-amber">Maybe</span></td><td style="font-size:10px;color:var(--text3);">Yesterday</td><td><div class="rv-row-actions"><button class="rv-act-btn">Report</button></div></td></tr>
+              <tr><td><div style="font-weight:600;">Carlos Mendez</div><div style="color:var(--text3);font-size:10px;">Shopify · 5yrs</div></td><td style="font-size:11px;">Sr. Software Eng.</td><td><span class="rv-pill rv-pill-green">Complete</span></td><td><div class="rv-score-chip rv-score-lo">42</div></td><td style="color:var(--red);font-size:11px;font-weight:700;">38</td><td style="font-size:11px;">52</td><td style="font-size:11px;">35</td><td><span class="rv-pill rv-pill-red">No Hire</span></td><td style="font-size:10px;color:var(--text3);">Yesterday</td><td><div class="rv-row-actions"><button class="rv-act-btn">Report</button></div></td></tr>
+              <tr><td><div style="font-weight:600;">James Miller</div><div style="color:var(--text3);font-size:10px;">Netflix · 7yrs</div></td><td style="font-size:11px;">Sr. Software Eng.</td><td><span class="rv-pill rv-pill-lime" style="background:var(--lime2);color:var(--lime);">In Progress</span></td><td><div class="rv-score-chip rv-score-na">—</div></td><td>—</td><td>—</td><td>—</td><td><span class="rv-pill rv-pill-gray">Pending</span></td><td style="font-size:10px;color:var(--text3);">Today</td><td><div class="rv-row-actions"><button class="rv-act-btn">Watch Live</button></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REPORTS PAGE -->
+      <div class="rv-page" id="rv-pg-reports">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Analytics Overview</div>
+        <div class="rv-g3" style="margin-bottom:14px;">
+          <div class="rv-card"><div class="rv-card-title">PASS RATE TREND</div><div style="display:flex;align-items:flex-end;gap:3px;height:56px;">${[40,52,48,60,55,70,65,72,68,76,80,72].map((h,i)=>`<div style="flex:1;border-radius:2px 2px 0 0;height:${h}%;background:${i===11?'var(--lime)':'rgba(170,255,0,.2)'};" title="${h}%"></div>`).join('')}</div><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:600;color:var(--lime);margin-top:9px;">25.5%</div><div style="font-size:11px;color:var(--text3);">This month</div></div>
+          <div class="rv-card"><div class="rv-card-title">AVG SCORE BY ROLE</div>${[['Sr. Engineer',78],['PM',72],['DevOps',68]].map(([r,s])=>`<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span style="color:var(--text2);">${r}</span><span style="font-weight:700;font-family:'Geist Mono',monospace;">${s}</span></div><div style="height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${s}%;background:var(--lime);border-radius:2px;"></div></div></div>`).join('')}</div>
+          <div class="rv-card"><div class="rv-card-title">TIME SAVED</div><div style="font-family:'Geist Mono',monospace;font-size:30px;font-weight:600;color:var(--lime);line-height:1;margin-bottom:5px;">47h</div><div style="font-size:11px;color:var(--text3);">This month vs manual screening</div><div style="margin-top:10px;font-size:11px;color:var(--text3);">At 6.8 min avg vs 90 min manual per candidate</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="rv-detail-panel" id="rv-detail-panel">
+    <div class="rv-detail-header">
+      <div style="position:relative;display:inline-flex;">
+        <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="4"/><circle cx="30" cy="30" r="26" fill="none" stroke="var(--lime)" stroke-width="4" stroke-dasharray="163.4" stroke-dashoffset="19.6" stroke-linecap="round" transform="rotate(-90 30 30)"/></svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-family:'Geist Mono',monospace;font-size:15px;font-weight:700;color:var(--lime);line-height:1;">88</div><div style="font-size:9px;color:var(--text3);">/100</div></div>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:2px;">Alex Chen</div>
+        <div style="font-size:11px;color:var(--text3);">Sr. Software Engineer · Stripe · 8 yrs</div>
+        <div style="margin-top:5px;"><span class="rv-pill rv-pill-green">✅ Strong Hire</span></div>
+      </div>
+      <button class="rv-detail-close" onclick="rvCloseDetail()">✕</button>
+    </div>
+    <div class="rv-detail-body">
+      <div class="rv-section">
+        <div class="rv-section-title">Dimension Scores</div>
+        <div class="rv-dim-bar"><div class="rv-dim-header"><div class="rv-dim-label">Technical Depth</div><div class="rv-dim-val" style="color:#34D399;">91</div></div><div class="rv-dim-bg"><div class="rv-dim-fill" style="width:91%;background:#34D399;"></div></div></div>
+        <div class="rv-dim-bar"><div class="rv-dim-header"><div class="rv-dim-label">Communication</div><div class="rv-dim-val" style="color:var(--lime);">85</div></div><div class="rv-dim-bg"><div class="rv-dim-fill" style="width:85%;background:var(--lime);"></div></div></div>
+        <div class="rv-dim-bar"><div class="rv-dim-header"><div class="rv-dim-label">Problem Solving</div><div class="rv-dim-val" style="color:#A78BFA;">88</div></div><div class="rv-dim-bg"><div class="rv-dim-fill" style="width:88%;background:#A78BFA;"></div></div></div>
+        <div class="rv-dim-bar"><div class="rv-dim-header"><div class="rv-dim-label">Leadership</div><div class="rv-dim-val" style="color:var(--amber);">82</div></div><div class="rv-dim-bg"><div class="rv-dim-fill" style="width:82%;background:var(--amber);"></div></div></div>
+        <div class="rv-dim-bar"><div class="rv-dim-header"><div class="rv-dim-label">Culture Fit</div><div class="rv-dim-val" style="color:var(--amber);">72</div></div><div class="rv-dim-bg"><div class="rv-dim-fill" style="width:72%;background:#F5A623;"></div></div></div>
+      </div>
+      <div class="rv-section">
+        <div class="rv-section-title">Key Insights</div>
+        <div class="rv-insight-item"><div class="rv-insight-num">1</div>Scale experience at Stripe (2M TPS) directly matches the role requirements.</div>
+        <div class="rv-insight-item"><div class="rv-insight-num">2</div>Communication was structured and specific throughout — used real numbers.</div>
+        <div class="rv-insight-item"><div class="rv-insight-num">3</div>Leadership claims backed by concrete team outcomes (2 promotions).</div>
+      </div>
+      <div class="rv-section">
+        <div class="rv-section-title">Strengths / Flags</div>
+        <div class="rv-flag-row rv-flag-str"><span style="color:#34D399;">✓</span><div style="margin-left:6px;"><div style="font-weight:600;font-size:12px;margin-bottom:1px;">Exceptional scale experience</div><div style="font-size:11px;color:var(--text3);">2M TPS and 500M-account DB directly relevant.</div></div></div>
+        <div class="rv-flag-row rv-flag-con"><span style="color:var(--amber);">!</span><div style="margin-left:6px;"><div style="font-weight:600;font-size:12px;margin-bottom:1px;">Leadership depth — probe more</div><div style="font-size:11px;color:var(--text3);">Answers were slightly surface-level on team dynamics.</div></div></div>
+      </div>
+      <div class="rv-section">
+        <div class="rv-section-title">Q&A Highlights</div>
+        <div class="rv-qa-block"><div class="rv-qa-q">Q1: Walk me through your most complex distributed systems challenge.</div><div class="rv-qa-a">At Stripe we had to scale payments from 200k to 2M TPS. The bottleneck was our PostgreSQL write path. We introduced a sharding layer with consistent hashing…</div><div class="rv-qa-note"><span>💡</span>Highly specific. Real numbers. Demonstrated architectural thinking clearly.</div></div>
+        <div class="rv-qa-block"><div class="rv-qa-q">Q2: Describe a time you disagreed with a senior leader.</div><div class="rv-qa-a">Our VP wanted to rewrite our crawler in Go immediately. I pushed back with data showing incremental migration reduced risk significantly…</div><div class="rv-qa-note"><span>💡</span>Data-driven. Showed influence without dismissiveness.</div></div>
+      </div>
+      <div class="rv-section">
+        <div class="rv-section-title">Hiring Manager Note</div>
+        <div class="rv-manager-box">"Top candidate — do not let this slip. Schedule a technical round this week. Probe leadership depth in next session. Expect competing offers from FAANG within days."</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="rv-btn rv-btn-p" style="flex:1;justify-content:center;">⭐ Shortlist</button>
+        <button class="rv-btn rv-btn-ghost" style="flex:1;justify-content:center;">🖨 Export PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     VIEW 3 — ENTERPRISE
+══════════════════════════════════ -->
+<style>
+/* Enterprise page tabs */
+.ep-tab{padding:6px 14px;border-radius:7px;border:none;background:none;font-size:12px;font-weight:500;color:rgba(255,255,255,.35);cursor:pointer;transition:all .15s;font-family:inherit;}
+.ep-tab:hover{color:rgba(255,255,255,.65);}
+.ep-tab.on{background:rgba(170,255,0,.1);color:var(--lime);}
+.ep-page{display:none;}
+.ep-page.on{display:block;}
+
+/* Member activity card */
+.em-card{background:#fff;border:1px solid #DDE1EE;border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.em-card-hd{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #EEF0F8;}
+.em-card-title{font-size:13px;font-weight:700;flex:1;color:#1A2035;}
+.em-member-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #F3F4FB;transition:background .1s;cursor:pointer;}
+.em-member-row:last-child{border-bottom:none;}
+.em-member-row:hover{background:#F7F8FC;}
+.em-avatar{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.em-member-info{flex:1;}
+.em-member-name{font-size:12px;font-weight:600;color:#1A2035;}
+.em-member-role{font-size:10px;color:#8892B0;margin-top:1px;}
+.em-stat{text-align:center;min-width:52px;}
+.em-stat-val{font-family:'Geist Mono',monospace;font-size:14px;font-weight:700;color:#1A2035;}
+.em-stat-lbl{font-size:9px;color:#8892B0;text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
+.em-activity-bar{display:flex;gap:2px;align-items:flex-end;height:24px;margin-left:8px;}
+.em-ab{width:5px;border-radius:2px 2px 0 0;background:#E8EAF2;transition:background .2s;}
+.em-ab.active{background:#4F46E5;}
+
+/* Campaign status */
+.ec-row{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid #EEF0F8;transition:background .1s;cursor:pointer;}
+.ec-row:last-child{border-bottom:none;}
+.ec-row:hover{background:#F7F8FC;}
+.ec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ec-name{font-size:12px;font-weight:600;color:#1A2035;flex:1.4;}
+.ec-owner{font-size:11px;color:#8892B0;flex:1;}
+.ec-dept{flex:.8;}
+.ec-funnel{display:flex;align-items:center;gap:3px;flex:1.6;}
+.ec-funnel-step{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;}
+.ec-progress-wrap{flex:1.2;}
+.ec-progress-bg{height:5px;background:#EEF0F8;border-radius:3px;overflow:hidden;}
+.ec-progress-fill{height:100%;border-radius:3px;transition:width .6s;}
+.ec-actions{display:flex;gap:5px;}
+.ec-act-btn{padding:4px 10px;border-radius:6px;border:1px solid #DDE1EE;background:transparent;font-size:10px;font-weight:600;color:#5E6899;cursor:pointer;transition:all .15s;}
+.ec-act-btn:hover{border-color:#1A2035;color:#1A2035;}
+
+/* Wallet */
+.ew-kpi{background:#1A2035;border-radius:14px;padding:20px 24px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;overflow:hidden;position:relative;}
+.ew-kpi::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(170,255,0,.06),transparent 55%);pointer-events:none;}
+.ew-kpi-item{padding:16px 20px;position:relative;}
+.ew-kpi-item+.ew-kpi-item::before{content:'';position:absolute;left:0;top:16px;bottom:16px;width:1px;background:rgba(255,255,255,.07);}
+.ew-kpi-val{font-family:'Geist Mono',monospace;font-size:26px;font-weight:600;color:#fff;line-height:1;letter-spacing:-.5px;}
+.ew-kpi-lbl{font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px;}
+.ew-kpi-sub{font-size:10px;margin-top:5px;}
+.ew-dept-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #EEF0F8;}
+.ew-dept-row:last-child{border-bottom:none;}
+.ew-dept-ico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.ew-dept-name{font-size:12px;font-weight:600;color:#1A2035;flex:1;}
+.ew-dept-interviews{font-size:11px;color:#8892B0;flex:.7;}
+.ew-dept-bar-wrap{flex:1.4;display:flex;align-items:center;gap:8px;}
+.ew-dept-bar-bg{flex:1;height:5px;background:#EEF0F8;border-radius:3px;overflow:hidden;}
+.ew-dept-bar-fill{height:100%;border-radius:3px;}
+.ew-dept-pct{font-size:10px;color:#8892B0;width:28px;text-align:right;}
+.ew-dept-amt{font-family:'Geist Mono',monospace;font-size:13px;font-weight:700;color:#1A2035;min-width:64px;text-align:right;}
+.ew-txn-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid #EEF0F8;font-size:11px;}
+.ew-txn-row:last-child{border-bottom:none;}
+.ew-txn-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.ew-txn-label{flex:1;color:#1A2035;font-weight:500;}
+.ew-txn-meta{color:#8892B0;}
+.ew-txn-amt{font-family:'Geist Mono',monospace;font-weight:700;}
+
+/* Plan & Features */
+.ef-plan-banner{background:linear-gradient(135deg,#1A2035,#0E1220);border-radius:14px;padding:22px 26px;margin-bottom:16px;position:relative;overflow:hidden;}
+.ef-plan-banner::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(ellipse,rgba(170,255,0,.1),transparent 65%);}
+.ef-plan-name{font-family:'Clash Display',sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:-.3px;}
+.ef-plan-badge{display:inline-flex;padding:3px 10px;border-radius:16px;background:rgba(170,255,0,.12);border:1px solid rgba(170,255,0,.25);font-size:10px;font-weight:700;color:var(--lime);text-transform:uppercase;letter-spacing:.5px;margin-left:10px;vertical-align:middle;}
+.ef-plan-sub{font-size:12px;color:rgba(255,255,255,.35);margin-top:5px;margin-bottom:16px;}
+.ef-plan-stats{display:flex;gap:20px;}
+.ef-plan-stat{display:flex;flex-direction:column;gap:2px;}
+.ef-plan-stat-val{font-family:'Geist Mono',monospace;font-size:18px;font-weight:600;color:#fff;}
+.ef-plan-stat-lbl{font-size:10px;color:rgba(255,255,255,.3);}
+.ef-feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.ef-feature-card{background:#fff;border:1px solid #DDE1EE;border-radius:11px;padding:14px 16px;display:flex;gap:11px;align-items:start;}
+.ef-feature-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.ef-feature-title{font-size:12px;font-weight:700;color:#1A2035;margin-bottom:2px;}
+.ef-feature-desc{font-size:10px;color:#8892B0;line-height:1.5;}
+.ef-feature-usage{margin-top:6px;display:flex;align-items:center;gap:7px;}
+.ef-usage-bg{flex:1;height:3px;background:#EEF0F8;border-radius:2px;overflow:hidden;}
+.ef-usage-fill{height:100%;border-radius:2px;}
+.ef-usage-txt{font-size:9px;color:#8892B0;white-space:nowrap;}
+.ef-feature-on{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;background:#DCFCE7;color:#166534;margin-top:6px;}
+.ef-feature-off{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;background:#F3F4FB;color:#8892B0;margin-top:6px;}
+.ef-addon-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #EEF0F8;}
+.ef-addon-row:last-child{border-bottom:none;}
+.ef-addon-name{font-size:12px;font-weight:600;color:#1A2035;flex:1;}
+.ef-addon-desc{font-size:11px;color:#8892B0;flex:2;}
+.ef-addon-price{font-family:'Geist Mono',monospace;font-size:12px;font-weight:700;color:#1A2035;white-space:nowrap;}
+.ef-upgrade-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;border:1.5px solid #DDE1EE;background:transparent;font-size:10px;font-weight:700;color:#5E6899;cursor:pointer;transition:all .15s;}
+.ef-upgrade-btn:hover{border-color:#4F46E5;color:#4F46E5;}
+</style>
+
+<div class="view" id="v-enterprise">
+  <!-- Top Bar -->
+  <div class="ev-topbar">
+    <div class="ev-brand">Shortlis<span>8</span></div>
+    <div class="ev-brand-divider"></div>
+    <div class="ev-org-name">Acme Corporation</div>
+    <div class="ev-nav" id="ep-tabs" style="display:flex;gap:2px;margin-left:20px;">
+      <button class="ep-tab on" onclick="epPage('overview',this)">Overview</button>
+      <button class="ep-tab" onclick="epPage('team',this)">Team Activity</button>
+      <button class="ep-tab" onclick="epPage('campaigns',this)">Campaigns</button>
+      <button class="ep-tab" onclick="epPage('wallet',this)">Wallet</button>
+      <button class="ep-tab" onclick="epPage('plan',this)">Plan &amp; Features</button>
+    </div>
+    <div class="ev-topbar-right">
+      <div class="ev-user-block"><div class="ev-uname">Jennifer Walsh</div><div class="ev-urole">VP People · Acme Corp</div></div>
+      <div class="ev-avatar">JW</div>
+    </div>
+  </div>
+
+  <div class="ev-body">
+    <!-- Left Nav -->
+    <div class="ev-left-nav">
+      <div class="ev-nav-section" style="margin-top:0;">Dashboard</div>
+      <button class="ev-nav-item on" onclick="epPage('overview',null)"><span class="ev-nav-item-ico">🏢</span>Overview</button>
+      <button class="ev-nav-item" onclick="epPage('team',null)"><span class="ev-nav-item-ico">👥</span>Team Activity<span class="ev-nav-badge blue">8</span></button>
+      <button class="ev-nav-item" onclick="epPage('campaigns',null)"><span class="ev-nav-item-ico">🚀</span>Campaigns<span class="ev-nav-badge green">5</span></button>
+      <div class="ev-nav-section">Finance</div>
+      <button class="ev-nav-item" onclick="epPage('wallet',null)"><span class="ev-nav-item-ico">💳</span>Wallet &amp; Charges<span class="ev-nav-badge amber">₹</span></button>
+      <div class="ev-nav-section">Platform</div>
+      <button class="ev-nav-item" onclick="epPage('plan',null)"><span class="ev-nav-item-ico">⭐</span>Plan &amp; Features</button>
+      <div class="ev-nav-section">Governance</div>
+      <button class="ev-nav-item"><span class="ev-nav-item-ico">🛡️</span>Compliance<span class="ev-nav-badge amber">2</span></button>
+      <button class="ev-nav-item"><span class="ev-nav-item-ico">📋</span>Audit Logs</button>
+      <button class="ev-nav-item"><span class="ev-nav-item-ico">🔗</span>HRIS Integration</button>
+    </div>
+
+    <div class="ev-content">
+
+      <!-- ── PAGE: OVERVIEW ── -->
+      <div class="ep-page on" id="ep-pg-overview">
+        <div class="ev-cmd-strip mb20">
+          <div class="ev-cmd-inner">
+            <div class="ev-cmd-title">Enterprise Dashboard</div>
+            <div class="ev-cmd-headline">Acme Corp Hiring Command</div>
+            <div class="ev-cmd-sub">3 departments · 5 active campaigns · 47 candidates this month</div>
+            <div class="ev-cmd-actions">
+              <button class="ev-btn ev-btn-primary" onclick="epPage('campaigns',null)">🚀 View Campaigns</button>
+              <button class="ev-btn ev-btn-ghost" onclick="epPage('wallet',null)">💳 Wallet</button>
+            </div>
+          </div>
+          <div class="ev-cmd-metrics">
+            <div class="ev-cmd-metric"><div class="ev-cmd-metric-val" style="color:#fff;">47</div><div class="ev-cmd-metric-lbl">Screened</div><div class="ev-cmd-metric-delta ev-delta-up">↑ 18%</div></div>
+            <div class="ev-cmd-metric"><div class="ev-cmd-metric-val" style="color:#34D399;">12</div><div class="ev-cmd-metric-lbl">Shortlisted</div><div class="ev-cmd-metric-delta ev-delta-up">25.5%</div></div>
+            <div class="ev-cmd-metric"><div class="ev-cmd-metric-val" style="color:var(--lime);">72</div><div class="ev-cmd-metric-lbl">Avg Score</div><div class="ev-cmd-metric-delta ev-delta-up">↑ 5pts</div></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;">
+          <div class="ev-dept-card" onclick="epPage('team',null)">
+            <div class="ev-dept-icon" style="background:#E8EAF2;">👥</div>
+            <div class="ev-dept-name">Team Activity</div>
+            <div class="ev-dept-meta">8 members · 5 active this week</div>
+            <div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;">
+              <span style="padding:2px 7px;border-radius:5px;font-size:10px;background:#DBEAFE;color:#1D4ED8;font-weight:600;">3 HR Managers</span>
+              <span style="padding:2px 7px;border-radius:5px;font-size:10px;background:#EDE9FE;color:#7C3AED;font-weight:600;">5 Hiring Mgrs</span>
+            </div>
+            <div class="ev-dept-progress"><div class="ev-dept-progress-label"><span>Interviews initiated</span><span>34 this mo.</span></div><div class="ev-dept-bar"><div class="ev-dept-bar-fill" style="width:85%;background:#4F46E5;"></div></div></div>
+          </div>
+          <div class="ev-dept-card" onclick="epPage('campaigns',null)">
+            <div class="ev-dept-icon" style="background:#DCFCE7;">🚀</div>
+            <div class="ev-dept-name">Active Campaigns</div>
+            <div class="ev-dept-meta">5 running · 2 completing soon</div>
+            <div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;">
+              <span style="padding:2px 7px;border-radius:5px;font-size:10px;background:#DCFCE7;color:#166534;font-weight:600;">3 Live</span>
+              <span style="padding:2px 7px;border-radius:5px;font-size:10px;background:#FEF3C7;color:#92400E;font-weight:600;">2 Closing</span>
+            </div>
+            <div class="ev-dept-progress"><div class="ev-dept-progress-label"><span>Avg completion</span><span>68%</span></div><div class="ev-dept-bar"><div class="ev-dept-bar-fill" style="width:68%;background:#16A34A;"></div></div></div>
+          </div>
+          <div class="ev-dept-card" onclick="epPage('wallet',null)">
+            <div class="ev-dept-icon" style="background:#FEF3C7;">💳</div>
+            <div class="ev-dept-name">Wallet Balance</div>
+            <div class="ev-dept-meta">March spend · Budget health</div>
+            <div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;">
+              <span style="padding:2px 7px;border-radius:5px;font-size:10px;background:#DCFCE7;color:#166534;font-weight:600;">Balance ₹18,400</span>
+              <span style="padding:2px 7px;border-radius:5px;font-size:10px;background:#F0F2F8;color:#5E6899;font-weight:600;">Spent ₹31,600</span>
+            </div>
+            <div class="ev-dept-progress"><div class="ev-dept-progress-label"><span>Budget utilisation</span><span>63%</span></div><div class="ev-dept-bar"><div class="ev-dept-bar-fill" style="width:63%;background:#D97706;"></div></div></div>
+          </div>
+        </div>
+
+        <div class="ev-table-wrap">
+          <div class="ev-table-header">
+            <div class="ev-table-title">Recent Interview Activity</div>
+            <div class="ev-search-box"><span>🔍</span><input placeholder="Search candidate or role…"/></div>
+            <div class="ev-filter-btns"><button class="ev-filter-btn on">All</button><button class="ev-filter-btn">Live</button><button class="ev-filter-btn">Complete</button></div>
+          </div>
+          <table class="ev-tbl">
+            <thead><tr><th>Candidate</th><th>Role</th><th>Initiated By</th><th>Campaign</th><th>Score</th><th>Verdict</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><div style="font-weight:600;font-size:12px;">Alex Chen</div><div style="font-size:10px;color:#5E6899;">Stripe · 8 yrs</div></td><td>Sr. Software Eng.</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:22px;height:22px;border-radius:6px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#7C3AED;">RK</div><span style="font-size:11px;">Ravi Kumar</span></div></td><td><span class="ev-pill ev-pill-blue">Eng · Batch 3</span></td><td><div class="ev-score-chip ev-score-hi">88</div></td><td><span class="ev-pill ev-pill-green">Strong Hire</span></td><td><span class="ev-pill ev-pill-green">Complete</span></td></tr>
+              <tr><td><div style="font-weight:600;font-size:12px;">Priya Kumar</div><div style="font-size:10px;color:#5E6899;">Amazon · 6 yrs</div></td><td>Sr. Software Eng.</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:22px;height:22px;border-radius:6px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#7C3AED;">RK</div><span style="font-size:11px;">Ravi Kumar</span></div></td><td><span class="ev-pill ev-pill-blue">Eng · Batch 3</span></td><td><div class="ev-score-chip ev-score-hi">76</div></td><td><span class="ev-pill ev-pill-green">Hire</span></td><td><span class="ev-pill ev-pill-green">Complete</span></td></tr>
+              <tr><td><div style="font-weight:600;font-size:12px;">Sneha Menon</div><div style="font-size:10px;color:#5E6899;">Flipkart · 5 yrs</div></td><td>Product Manager</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:22px;height:22px;border-radius:6px;background:#FEF3C7;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#92400E;">AP</div><span style="font-size:11px;">Asha Pillai</span></div></td><td><span class="ev-pill ev-pill-gray">Product · Q1</span></td><td><div class="ev-score-chip ev-score-hi">81</div></td><td><span class="ev-pill ev-pill-green">Hire</span></td><td><span class="ev-pill ev-pill-green">Complete</span></td></tr>
+              <tr><td><div style="font-weight:600;font-size:12px;">James Miller</div><div style="font-size:10px;color:#5E6899;">Netflix · 7 yrs</div></td><td>Sr. Software Eng.</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:22px;height:22px;border-radius:6px;background:#DBEAFE;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1D4ED8;">SJ</div><span style="font-size:11px;">Sarah Johnson</span></div></td><td><span class="ev-pill ev-pill-blue">Eng · Batch 4</span></td><td><div class="ev-score-chip ev-score-na">—</div></td><td><span class="ev-pill ev-pill-gray">Pending</span></td><td><span class="ev-pill" style="background:rgba(170,255,0,.1);color:#5A7A00;">● Live</span></td></tr>
+              <tr><td><div style="font-weight:600;font-size:12px;">Fatima Al-Rashid</div><div style="font-size:10px;color:#5E6899;">Microsoft · 9 yrs</div></td><td>Sr. Software Eng.</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:22px;height:22px;border-radius:6px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#7C3AED;">RK</div><span style="font-size:11px;">Ravi Kumar</span></div></td><td><span class="ev-pill ev-pill-blue">Eng · Batch 3</span></td><td><div class="ev-score-chip ev-score-mid">64</div></td><td><span class="ev-pill ev-pill-amber">Maybe</span></td><td><span class="ev-pill ev-pill-green">Complete</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PAGE: TEAM ACTIVITY ── -->
+      <div class="ep-page" id="ep-pg-team">
+        <div style="font-family:'Clash Display',sans-serif;font-size:20px;font-weight:700;color:#1A2035;margin-bottom:3px;letter-spacing:-.3px;">Team Activity</div>
+        <div style="font-size:12px;color:#8892B0;margin-bottom:20px;">HR managers &amp; hiring managers who have initiated interview campaigns</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+          <div class="ev-card" style="padding:16px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#8892B0;margin-bottom:6px;">Total Members</div><div style="font-family:'Geist Mono',monospace;font-size:28px;font-weight:700;color:#1A2035;">8</div><div style="font-size:10px;color:#5E6899;margin-top:3px;">3 HR · 5 Managers</div></div>
+          <div class="ev-card" style="padding:16px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#8892B0;margin-bottom:6px;">Interviews Initiated</div><div style="font-family:'Geist Mono',monospace;font-size:28px;font-weight:700;color:#1D4ED8;">34</div><div style="font-size:10px;color:#5E6899;margin-top:3px;">This month</div></div>
+          <div class="ev-card" style="padding:16px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#8892B0;margin-bottom:6px;">Campaigns Active</div><div style="font-family:'Geist Mono',monospace;font-size:28px;font-weight:700;color:#16A34A;">5</div><div style="font-size:10px;color:#5E6899;margin-top:3px;">Across 3 depts</div></div>
+          <div class="ev-card" style="padding:16px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#8892B0;margin-bottom:6px;">Most Active</div><div style="font-size:14px;font-weight:700;color:#1A2035;margin-top:4px;">Ravi Kumar</div><div style="font-size:10px;color:#5E6899;margin-top:2px;">18 interviews · Eng</div></div>
+        </div>
+
+        <div class="em-card">
+          <div class="em-card-hd">
+            <div class="em-card-title">HR Managers</div>
+            <span class="ev-pill ev-pill-blue">3 members</span>
+          </div>
+          <!-- HR members -->
+          <div class="em-member-row">
+            <div class="em-avatar" style="background:#EDE9FE;color:#7C3AED;">SJ</div>
+            <div class="em-member-info"><div class="em-member-name">Sarah Johnson</div><div class="em-member-role">HR Manager · People Operations</div></div>
+            <div class="em-stat"><div class="em-stat-val">12</div><div class="em-stat-lbl">Initiated</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#166534;">9</div><div class="em-stat-lbl">Complete</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#D97706;">3</div><div class="em-stat-lbl">Pending</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#1A2035;">74</div><div class="em-stat-lbl">Avg Score</div></div>
+            <div class="em-activity-bar">
+              ${[3,5,4,7,6,8,5].map((v,i)=>`<div class="em-ab${i>=4?' active':''}" style="height:${v*3}px;"></div>`).join('')}
+            </div>
+            <span class="ev-pill ev-pill-blue" style="margin-left:6px;">3 Campaigns</span>
+          </div>
+          <div class="em-member-row">
+            <div class="em-avatar" style="background:#FEF3C7;color:#92400E;">AP</div>
+            <div class="em-member-info"><div class="em-member-name">Asha Pillai</div><div class="em-member-role">HR Business Partner · Product &amp; Design</div></div>
+            <div class="em-stat"><div class="em-stat-val">8</div><div class="em-stat-lbl">Initiated</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#166534;">7</div><div class="em-stat-lbl">Complete</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#D97706;">1</div><div class="em-stat-lbl">Pending</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#1A2035;">79</div><div class="em-stat-lbl">Avg Score</div></div>
+            <div class="em-activity-bar">
+              ${[2,4,6,3,5,4,6].map((v,i)=>`<div class="em-ab${i>=5?' active':''}" style="height:${v*3}px;"></div>`).join('')}
+            </div>
+            <span class="ev-pill ev-pill-gray" style="margin-left:6px;">1 Campaign</span>
+          </div>
+          <div class="em-member-row">
+            <div class="em-avatar" style="background:#DCFCE7;color:#166534;">MT</div>
+            <div class="em-member-info"><div class="em-member-name">Meena Thomas</div><div class="em-member-role">Talent Acquisition · Operations</div></div>
+            <div class="em-stat"><div class="em-stat-val">4</div><div class="em-stat-lbl">Initiated</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#166534;">3</div><div class="em-stat-lbl">Complete</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#D97706;">1</div><div class="em-stat-lbl">Pending</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#1A2035;">68</div><div class="em-stat-lbl">Avg Score</div></div>
+            <div class="em-activity-bar">
+              ${[1,2,1,3,2,4,3].map((v,i)=>`<div class="em-ab${i>=6?' active':''}" style="height:${v*3}px;"></div>`).join('')}
+            </div>
+            <span class="ev-pill ev-pill-gray" style="margin-left:6px;">1 Campaign</span>
+          </div>
+        </div>
+
+        <div class="em-card">
+          <div class="em-card-hd">
+            <div class="em-card-title">Hiring Managers</div>
+            <span class="ev-pill ev-pill-blue">5 members</span>
+          </div>
+          <div class="em-member-row">
+            <div class="em-avatar" style="background:#EDE9FE;color:#7C3AED;">RK</div>
+            <div class="em-member-info"><div class="em-member-name">Ravi Kumar</div><div class="em-member-role">Engineering Manager · Platform</div></div>
+            <div class="em-stat"><div class="em-stat-val">18</div><div class="em-stat-lbl">Initiated</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#166534;">14</div><div class="em-stat-lbl">Complete</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#D97706;">4</div><div class="em-stat-lbl">Pending</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#1A2035;">76</div><div class="em-stat-lbl">Avg Score</div></div>
+            <div class="em-activity-bar">
+              ${[5,7,8,6,9,8,10].map((v,i)=>`<div class="em-ab${i>=4?' active':''}" style="height:${v*2}px;"></div>`).join('')}
+            </div>
+            <span class="ev-pill ev-pill-green" style="margin-left:6px;">2 Campaigns</span>
+          </div>
+          <div class="em-member-row">
+            <div class="em-avatar" style="background:#DBEAFE;color:#1D4ED8;">VN</div>
+            <div class="em-member-info"><div class="em-member-name">Vivek Nair</div><div class="em-member-role">Senior Engineering Manager · Backend</div></div>
+            <div class="em-stat"><div class="em-stat-val">10</div><div class="em-stat-lbl">Initiated</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#166534;">8</div><div class="em-stat-lbl">Complete</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#D97706;">2</div><div class="em-stat-lbl">Pending</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#1A2035;">71</div><div class="em-stat-lbl">Avg Score</div></div>
+            <div class="em-activity-bar">
+              ${[4,3,5,6,4,7,5].map((v,i)=>`<div class="em-ab${i>=5?' active':''}" style="height:${v*2}px;"></div>`).join('')}
+            </div>
+            <span class="ev-pill ev-pill-blue" style="margin-left:6px;">1 Campaign</span>
+          </div>
+          <div class="em-member-row">
+            <div class="em-avatar" style="background:#FEE2E2;color:#991B1B;">KS</div>
+            <div class="em-member-info"><div class="em-member-name">Kavitha Suresh</div><div class="em-member-role">Product Lead · Growth</div></div>
+            <div class="em-stat"><div class="em-stat-val">6</div><div class="em-stat-lbl">Initiated</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#166534;">5</div><div class="em-stat-lbl">Complete</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#D97706;">1</div><div class="em-stat-lbl">Pending</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#1A2035;">82</div><div class="em-stat-lbl">Avg Score</div></div>
+            <div class="em-activity-bar">
+              ${[2,3,4,3,5,4,3].map((v,i)=>`<div class="em-ab${i>=5?' active':''}" style="height:${v*3}px;"></div>`).join('')}
+            </div>
+            <span class="ev-pill ev-pill-gray" style="margin-left:6px;">1 Campaign</span>
+          </div>
+          <div class="em-member-row">
+            <div class="em-avatar" style="background:#F0FDF4;color:#166534;">DS</div>
+            <div class="em-member-info"><div class="em-member-name">Dinesh Shetty</div><div class="em-member-role">Head of DevOps</div></div>
+            <div class="em-stat"><div class="em-stat-val">5</div><div class="em-stat-lbl">Initiated</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#166534;">4</div><div class="em-stat-lbl">Complete</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#D97706;">1</div><div class="em-stat-lbl">Pending</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#1A2035;">69</div><div class="em-stat-lbl">Avg Score</div></div>
+            <div class="em-activity-bar">
+              ${[1,2,3,2,4,3,2].map((v,i)=>`<div class="em-ab${i>=5?' active':''}" style="height:${v*3}px;"></div>`).join('')}
+            </div>
+            <span class="ev-pill ev-pill-gray" style="margin-left:6px;">1 Campaign</span>
+          </div>
+          <div class="em-member-row">
+            <div class="em-avatar" style="background:#F5F3FF;color:#7C3AED;">PG</div>
+            <div class="em-member-info"><div class="em-member-name">Pooja Ghosh</div><div class="em-member-role">Operations Manager · Finance</div></div>
+            <div class="em-stat"><div class="em-stat-val">3</div><div class="em-stat-lbl">Initiated</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#166534;">2</div><div class="em-stat-lbl">Complete</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#D97706;">1</div><div class="em-stat-lbl">Pending</div></div>
+            <div class="em-stat"><div class="em-stat-val" style="color:#1A2035;">72</div><div class="em-stat-lbl">Avg Score</div></div>
+            <div class="em-activity-bar">
+              ${[1,0,1,2,1,2,1].map((v,i)=>`<div class="em-ab${i>=6?' active':''}" style="height:${Math.max(4,v*4)}px;"></div>`).join('')}
+            </div>
+            <span class="ev-pill ev-pill-gray" style="margin-left:6px;">1 Campaign</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAGE: CAMPAIGNS ── -->
+      <div class="ep-page" id="ep-pg-campaigns">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div style="font-family:'Clash Display',sans-serif;font-size:20px;font-weight:700;color:#1A2035;letter-spacing:-.3px;">Campaigns</div>
+          <button class="ev-btn ev-btn-primary">+ New Campaign</button>
+        </div>
+        <div style="font-size:12px;color:#8892B0;margin-bottom:20px;">All interview campaigns across departments — live status, ownership &amp; funnel</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+          <div class="ev-card" style="padding:14px;text-align:center;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#8892B0;margin-bottom:5px;">Total</div><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:700;color:#1A2035;">5</div><div style="font-size:10px;color:#8892B0;">Campaigns</div></div>
+          <div class="ev-card" style="padding:14px;text-align:center;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#8892B0;margin-bottom:5px;">Live</div><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:700;color:#16A34A;">3</div><div style="font-size:10px;color:#8892B0;">Running now</div></div>
+          <div class="ev-card" style="padding:14px;text-align:center;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#8892B0;margin-bottom:5px;">Closing</div><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:700;color:#D97706;">2</div><div style="font-size:10px;color:#8892B0;">This week</div></div>
+          <div class="ev-card" style="padding:14px;text-align:center;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#8892B0;margin-bottom:5px;">Candidates</div><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:700;color:#1D4ED8;">47</div><div style="font-size:10px;color:#8892B0;">In pipeline</div></div>
+          <div class="ev-card" style="padding:14px;text-align:center;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#8892B0;margin-bottom:5px;">Shortlisted</div><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:700;color:#7C3AED;">12</div><div style="font-size:10px;color:#8892B0;">Ready to hire</div></div>
+        </div>
+
+        <div class="em-card">
+          <div class="em-card-hd">
+            <div class="em-card-title">All Campaigns</div>
+            <div class="ev-filter-btns"><button class="ev-filter-btn on">All</button><button class="ev-filter-btn">Live</button><button class="ev-filter-btn">Closing</button><button class="ev-filter-btn">Complete</button></div>
+          </div>
+          <!-- header -->
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 18px;background:#F7F8FC;border-bottom:1px solid #EEF0F8;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8892B0;">
+            <div style="flex:1.6;">Campaign</div><div style="flex:1.2;">Owner</div><div style="flex:.8;">Dept</div><div style="flex:1.8;">Funnel</div><div style="flex:1.2;">Progress</div><div style="width:80px;text-align:right;">Actions</div>
+          </div>
+          <!-- rows -->
+          <div class="ec-row">
+            <div style="flex:1.6;"><div style="font-size:12px;font-weight:700;color:#1A2035;display:flex;align-items:center;gap:6px;"><span class="ec-dot" style="background:#16A34A;box-shadow:0 0 0 2px rgba(22,163,74,.15);animation:pulse .8s infinite;"></span>Platform Eng · Batch 3</div><div style="font-size:10px;color:#8892B0;margin-top:2px;">Sr. Software Engineers · 8 open roles</div></div>
+            <div style="flex:1.2;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:6px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#7C3AED;">RK</div><span style="font-size:11px;color:#1A2035;font-weight:500;">Ravi Kumar</span></div></div>
+            <div style="flex:.8;"><span class="ev-pill ev-pill-blue">Engineering</span></div>
+            <div style="flex:1.8;" class="ec-funnel">
+              <span class="ec-funnel-step" style="background:#DBEAFE;color:#1D4ED8;">28 uploaded</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#FEF3C7;color:#92400E;">14 invited</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#DCFCE7;color:#166534;">8 done</span>
+            </div>
+            <div style="flex:1.2;" class="ec-progress-wrap"><div style="display:flex;justify-content:space-between;font-size:9px;color:#8892B0;margin-bottom:3px;"><span>Completion</span><span style="font-weight:700;color:#1A2035;">57%</span></div><div class="ec-progress-bg"><div class="ec-progress-fill" style="width:57%;background:#1D4ED8;"></div></div></div>
+            <div style="width:80px;display:flex;gap:4px;justify-content:flex-end;"><button class="ec-act-btn">View</button><button class="ec-act-btn" style="border-color:#16A34A;color:#16A34A;">● Live</button></div>
+          </div>
+          <div class="ec-row">
+            <div style="flex:1.6;"><div style="font-size:12px;font-weight:700;color:#1A2035;display:flex;align-items:center;gap:6px;"><span class="ec-dot" style="background:#16A34A;box-shadow:0 0 0 2px rgba(22,163,74,.15);animation:pulse .8s infinite .3s;"></span>Backend Eng · Batch 4</div><div style="font-size:10px;color:#8892B0;margin-top:2px;">Backend Engineers · API &amp; Infra</div></div>
+            <div style="flex:1.2;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:6px;background:#DBEAFE;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1D4ED8;">VN</div><span style="font-size:11px;color:#1A2035;font-weight:500;">Vivek Nair</span></div></div>
+            <div style="flex:.8;"><span class="ev-pill ev-pill-blue">Engineering</span></div>
+            <div style="flex:1.8;" class="ec-funnel">
+              <span class="ec-funnel-step" style="background:#DBEAFE;color:#1D4ED8;">15 uploaded</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#FEF3C7;color:#92400E;">10 invited</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#DCFCE7;color:#166534;">3 done</span>
+            </div>
+            <div style="flex:1.2;" class="ec-progress-wrap"><div style="display:flex;justify-content:space-between;font-size:9px;color:#8892B0;margin-bottom:3px;"><span>Completion</span><span style="font-weight:700;color:#1A2035;">20%</span></div><div class="ec-progress-bg"><div class="ec-progress-fill" style="width:20%;background:#1D4ED8;"></div></div></div>
+            <div style="width:80px;display:flex;gap:4px;justify-content:flex-end;"><button class="ec-act-btn">View</button><button class="ec-act-btn" style="border-color:#16A34A;color:#16A34A;">● Live</button></div>
+          </div>
+          <div class="ec-row">
+            <div style="flex:1.6;"><div style="font-size:12px;font-weight:700;color:#1A2035;display:flex;align-items:center;gap:6px;"><span class="ec-dot" style="background:#16A34A;box-shadow:0 0 0 2px rgba(22,163,74,.15);animation:pulse .8s infinite .6s;"></span>Product Manager · Q1</div><div style="font-size:10px;color:#8892B0;margin-top:2px;">Senior Product Managers · Growth &amp; Platform</div></div>
+            <div style="flex:1.2;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:6px;background:#FEF3C7;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#92400E;">AP</div><span style="font-size:11px;color:#1A2035;font-weight:500;">Asha Pillai</span></div></div>
+            <div style="flex:.8;"><span class="ev-pill ev-pill-gray">Product</span></div>
+            <div style="flex:1.8;" class="ec-funnel">
+              <span class="ec-funnel-step" style="background:#DBEAFE;color:#1D4ED8;">12 uploaded</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#FEF3C7;color:#92400E;">8 invited</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#DCFCE7;color:#166534;">7 done</span>
+            </div>
+            <div style="flex:1.2;" class="ec-progress-wrap"><div style="display:flex;justify-content:space-between;font-size:9px;color:#8892B0;margin-bottom:3px;"><span>Completion</span><span style="font-weight:700;color:#1A2035;">88%</span></div><div class="ec-progress-bg"><div class="ec-progress-fill" style="width:88%;background:#7C3AED;"></div></div></div>
+            <div style="width:80px;display:flex;gap:4px;justify-content:flex-end;"><button class="ec-act-btn">View</button><button class="ec-act-btn" style="border-color:#D97706;color:#D97706;">Closing</button></div>
+          </div>
+          <div class="ec-row">
+            <div style="flex:1.6;"><div style="font-size:12px;font-weight:700;color:#1A2035;display:flex;align-items:center;gap:6px;"><span class="ec-dot" style="background:#D97706;"></span>DevOps Engineer · Mar</div><div style="font-size:10px;color:#8892B0;margin-top:2px;">Senior DevOps · Cloud Infrastructure</div></div>
+            <div style="flex:1.2;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:6px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#166534;">DS</div><span style="font-size:11px;color:#1A2035;font-weight:500;">Dinesh Shetty</span></div></div>
+            <div style="flex:.8;"><span class="ev-pill ev-pill-blue">Engineering</span></div>
+            <div style="flex:1.8;" class="ec-funnel">
+              <span class="ec-funnel-step" style="background:#DBEAFE;color:#1D4ED8;">9 uploaded</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#FEF3C7;color:#92400E;">7 invited</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#DCFCE7;color:#166534;">6 done</span>
+            </div>
+            <div style="flex:1.2;" class="ec-progress-wrap"><div style="display:flex;justify-content:space-between;font-size:9px;color:#8892B0;margin-bottom:3px;"><span>Completion</span><span style="font-weight:700;color:#1A2035;">86%</span></div><div class="ec-progress-bg"><div class="ec-progress-fill" style="width:86%;background:#D97706;"></div></div></div>
+            <div style="width:80px;display:flex;gap:4px;justify-content:flex-end;"><button class="ec-act-btn">View</button><button class="ec-act-btn" style="border-color:#D97706;color:#D97706;">Closing</button></div>
+          </div>
+          <div class="ec-row">
+            <div style="flex:1.6;"><div style="font-size:12px;font-weight:700;color:#1A2035;display:flex;align-items:center;gap:6px;"><span class="ec-dot" style="background:#8892B0;"></span>Finance Analyst · Feb</div><div style="font-size:10px;color:#8892B0;margin-top:2px;">Financial Analysts · FP&amp;A</div></div>
+            <div style="flex:1.2;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:6px;background:#F5F3FF;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#7C3AED;">PG</div><span style="font-size:11px;color:#1A2035;font-weight:500;">Pooja Ghosh</span></div></div>
+            <div style="flex:.8;"><span class="ev-pill ev-pill-amber">Operations</span></div>
+            <div style="flex:1.8;" class="ec-funnel">
+              <span class="ec-funnel-step" style="background:#DBEAFE;color:#1D4ED8;">6 uploaded</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#FEF3C7;color:#92400E;">5 invited</span>
+              <span style="color:#DDE1EE;font-size:10px;">›</span>
+              <span class="ec-funnel-step" style="background:#DCFCE7;color:#166534;">5 done</span>
+            </div>
+            <div style="flex:1.2;" class="ec-progress-wrap"><div style="display:flex;justify-content:space-between;font-size:9px;color:#8892B0;margin-bottom:3px;"><span>Completion</span><span style="font-weight:700;color:#1A2035;">100%</span></div><div class="ec-progress-bg"><div class="ec-progress-fill" style="width:100%;background:#166534;"></div></div></div>
+            <div style="width:80px;display:flex;gap:4px;justify-content:flex-end;"><button class="ec-act-btn">View</button><button class="ec-act-btn" style="border-color:#166534;color:#166534;">✓ Done</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAGE: WALLET ── -->
+      <div class="ep-page" id="ep-pg-wallet">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div style="font-family:'Clash Display',sans-serif;font-size:20px;font-weight:700;color:#1A2035;letter-spacing:-.3px;">Wallet &amp; Charges</div>
+          <button class="ev-btn ev-btn-primary">+ Add Credits</button>
+        </div>
+        <div style="font-size:12px;color:#8892B0;margin-bottom:18px;">Spend breakdown by department, function &amp; recent transactions</div>
+
+        <!-- KPI strip -->
+        <div class="ew-kpi mb16">
+          <div class="ew-kpi-item"><div class="ew-kpi-val">₹18,400</div><div class="ew-kpi-lbl">Balance</div><div class="ew-kpi-sub" style="color:rgba(170,255,0,.6);">↑ Topped up Mar 10</div></div>
+          <div class="ew-kpi-item"><div class="ew-kpi-val">₹31,600</div><div class="ew-kpi-lbl">March Spend</div><div class="ew-kpi-sub" style="color:rgba(255,179,64,.6);">63% of budget</div></div>
+          <div class="ew-kpi-item"><div class="ew-kpi-val">₹50,000</div><div class="ew-kpi-lbl">Monthly Budget</div><div class="ew-kpi-sub" style="color:rgba(255,255,255,.25);">Set by Finance</div></div>
+          <div class="ew-kpi-item"><div class="ew-kpi-val">₹672</div><div class="ew-kpi-lbl">Cost / Interview</div><div class="ew-kpi-sub" style="color:rgba(170,255,0,.6);">↓ 12% vs last mo.</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px;align-items:start;">
+          <!-- Dept breakdown -->
+          <div>
+            <div class="em-card">
+              <div class="em-card-hd"><div class="em-card-title">Spend by Department</div><span style="font-size:10px;color:#8892B0;">March 2025</span></div>
+              <div class="ew-dept-row">
+                <div class="ew-dept-ico" style="background:#E8EAF2;">💻</div>
+                <div class="ew-dept-name">Engineering</div>
+                <div class="ew-dept-interviews">28 interviews</div>
+                <div class="ew-dept-bar-wrap"><div class="ew-dept-bar-bg"><div class="ew-dept-bar-fill" style="width:74%;background:#1D4ED8;"></div></div><div class="ew-dept-pct">74%</div></div>
+                <div class="ew-dept-amt">₹23,400</div>
+              </div>
+              <div class="ew-dept-row">
+                <div class="ew-dept-ico" style="background:#F3EFFE;">📦</div>
+                <div class="ew-dept-name">Product</div>
+                <div class="ew-dept-interviews">8 interviews</div>
+                <div class="ew-dept-bar-wrap"><div class="ew-dept-bar-bg"><div class="ew-dept-bar-fill" style="width:18%;background:#7C3AED;"></div></div><div class="ew-dept-pct">18%</div></div>
+                <div class="ew-dept-amt">₹5,800</div>
+              </div>
+              <div class="ew-dept-row">
+                <div class="ew-dept-ico" style="background:#FEF3C7;">⚙️</div>
+                <div class="ew-dept-name">Operations</div>
+                <div class="ew-dept-interviews">4 interviews</div>
+                <div class="ew-dept-bar-wrap"><div class="ew-dept-bar-bg"><div class="ew-dept-bar-fill" style="width:8%;background:#D97706;"></div></div><div class="ew-dept-pct">8%</div></div>
+                <div class="ew-dept-amt">₹2,400</div>
+              </div>
+            </div>
+
+            <div class="em-card">
+              <div class="em-card-hd"><div class="em-card-title">Spend by Function</div><span style="font-size:10px;color:#8892B0;">Charged per usage</span></div>
+              <div class="ew-dept-row">
+                <div style="font-size:14px;width:24px;text-align:center;">🎙️</div>
+                <div class="ew-dept-name">AI Voice Interviews</div>
+                <div class="ew-dept-interviews">47 sessions</div>
+                <div class="ew-dept-bar-wrap"><div class="ew-dept-bar-bg"><div class="ew-dept-bar-fill" style="width:65%;background:#4F46E5;"></div></div><div class="ew-dept-pct">65%</div></div>
+                <div class="ew-dept-amt">₹20,540</div>
+              </div>
+              <div class="ew-dept-row">
+                <div style="font-size:14px;width:24px;text-align:center;">📄</div>
+                <div class="ew-dept-name">Resume Parsing</div>
+                <div class="ew-dept-interviews">70 resumes</div>
+                <div class="ew-dept-bar-wrap"><div class="ew-dept-bar-bg"><div class="ew-dept-bar-fill" style="width:22%;background:#0891B2;"></div></div><div class="ew-dept-pct">22%</div></div>
+                <div class="ew-dept-amt">₹6,950</div>
+              </div>
+              <div class="ew-dept-row">
+                <div style="font-size:14px;width:24px;text-align:center;">🤖</div>
+                <div class="ew-dept-name">AI Score Analysis</div>
+                <div class="ew-dept-interviews">47 reports</div>
+                <div class="ew-dept-bar-wrap"><div class="ew-dept-bar-bg"><div class="ew-dept-bar-fill" style="width:10%;background:#16A34A;"></div></div><div class="ew-dept-pct">10%</div></div>
+                <div class="ew-dept-amt">₹3,100</div>
+              </div>
+              <div class="ew-dept-row">
+                <div style="font-size:14px;width:24px;text-align:center;">✉️</div>
+                <div class="ew-dept-name">Candidate Invitations</div>
+                <div class="ew-dept-interviews">70 sent</div>
+                <div class="ew-dept-bar-wrap"><div class="ew-dept-bar-bg"><div class="ew-dept-bar-fill" style="width:3%;background:#8892B0;"></div></div><div class="ew-dept-pct">3%</div></div>
+                <div class="ew-dept-amt">₹1,010</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transactions -->
+          <div>
+            <div class="em-card">
+              <div class="em-card-hd"><div class="em-card-title">Recent Transactions</div></div>
+              <div class="ew-txn-row"><div class="ew-txn-ico">🎙️</div><div class="ew-txn-label">Interview · Alex Chen</div><div class="ew-txn-meta" style="margin-right:8px;">Today 11:22</div><div class="ew-txn-amt" style="color:#991B1B;">−₹436</div></div>
+              <div class="ew-txn-row"><div class="ew-txn-ico">🎙️</div><div class="ew-txn-label">Interview · Priya Kumar</div><div class="ew-txn-meta" style="margin-right:8px;">Today 09:14</div><div class="ew-txn-amt" style="color:#991B1B;">−₹412</div></div>
+              <div class="ew-txn-row"><div class="ew-txn-ico">📄</div><div class="ew-txn-label">Resume Batch · Batch 4 (8 CVs)</div><div class="ew-txn-meta" style="margin-right:8px;">Yesterday</div><div class="ew-txn-amt" style="color:#991B1B;">−₹792</div></div>
+              <div class="ew-txn-row"><div class="ew-txn-ico">💳</div><div class="ew-txn-label">Credits Added by Finance</div><div class="ew-txn-meta" style="margin-right:8px;">Mar 10</div><div class="ew-txn-amt" style="color:#166534;">+₹20,000</div></div>
+              <div class="ew-txn-row"><div class="ew-txn-ico">🎙️</div><div class="ew-txn-label">Interview · Sneha Menon</div><div class="ew-txn-meta" style="margin-right:8px;">Mar 09</div><div class="ew-txn-amt" style="color:#991B1B;">−₹394</div></div>
+              <div class="ew-txn-row"><div class="ew-txn-ico">🤖</div><div class="ew-txn-label">Score Analysis · Batch 3 (14)</div><div class="ew-txn-meta" style="margin-right:8px;">Mar 08</div><div class="ew-txn-amt" style="color:#991B1B;">−₹924</div></div>
+              <div class="ew-txn-row"><div class="ew-txn-ico">📄</div><div class="ew-txn-label">Resume Batch · Batch 3 (28 CVs)</div><div class="ew-txn-meta" style="margin-right:8px;">Mar 06</div><div class="ew-txn-amt" style="color:#991B1B;">−₹2,772</div></div>
+              <div class="ew-txn-row"><div class="ew-txn-ico">✉️</div><div class="ew-txn-label">Invitations · Batch 3 (28 sent)</div><div class="ew-txn-meta" style="margin-right:8px;">Mar 06</div><div class="ew-txn-amt" style="color:#991B1B;">−₹406</div></div>
+            </div>
+            <div style="text-align:center;padding:10px;"><button class="ev-btn ev-btn-ghost" style="font-size:11px;">Download Statement PDF</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAGE: PLAN & FEATURES ── -->
+      <div class="ep-page" id="ep-pg-plan">
+        <div style="font-family:'Clash Display',sans-serif;font-size:20px;font-weight:700;color:#1A2035;margin-bottom:3px;letter-spacing:-.3px;">Plan &amp; Features</div>
+        <div style="font-size:12px;color:#8892B0;margin-bottom:18px;">Current plan, active features and usage across Acme Corp</div>
+
+        <!-- Plan banner -->
+        <div class="ef-plan-banner mb16">
+          <div style="position:relative;">
+            <div style="display:flex;align-items:center;margin-bottom:4px;">
+              <div class="ef-plan-name">Enterprise Growth</div>
+              <span class="ef-plan-badge">Active</span>
+            </div>
+            <div class="ef-plan-sub">Billed monthly · Renews Apr 1, 2025 · ₹49,999/mo</div>
+            <div class="ef-plan-stats">
+              <div class="ef-plan-stat"><div class="ef-plan-stat-val">Unlimited</div><div class="ef-plan-stat-lbl">Interviews/mo</div></div>
+              <div class="ef-plan-stat"><div class="ef-plan-stat-val">8</div><div class="ef-plan-stat-lbl">Seats used</div></div>
+              <div class="ef-plan-stat"><div class="ef-plan-stat-val">∞</div><div class="ef-plan-stat-lbl">Campaigns</div></div>
+              <div class="ef-plan-stat"><div class="ef-plan-stat-val">Priority</div><div class="ef-plan-stat-lbl">Support SLA</div></div>
+            </div>
+          </div>
+          <div style="position:absolute;top:20px;right:26px;display:flex;gap:8px;">
+            <button class="ev-btn ev-btn-ghost" style="color:rgba(255,255,255,.4);border-color:rgba(255,255,255,.1);">Change Plan</button>
+            <button class="ev-btn" style="background:var(--lime);color:#000;">Upgrade to Enterprise Pro →</button>
+          </div>
+        </div>
+
+        <!-- Features grid -->
+        <div style="font-size:12px;font-weight:700;color:#1A2035;margin-bottom:10px;">Active Features</div>
+        <div class="ef-feature-grid mb16">
+          <div class="ef-feature-card">
+            <div class="ef-feature-ico" style="background:#EDE9FE;">🎙️</div>
+            <div><div class="ef-feature-title">AI Voice Interviews</div><div class="ef-feature-desc">Async AI-conducted voice interviews with adaptive follow-up questions</div><div class="ef-feature-usage"><div class="ef-usage-bg"><div class="ef-usage-fill" style="width:94%;background:#4F46E5;"></div></div><span class="ef-usage-txt">47 / 50 this mo.</span></div></div>
+          </div>
+          <div class="ef-feature-card">
+            <div class="ef-feature-ico" style="background:#DCFCE7;">📄</div>
+            <div><div class="ef-feature-title">AI Resume Parser</div><div class="ef-feature-desc">Automated resume parsing, skills extraction and JD matching at scale</div><div class="ef-feature-usage"><div class="ef-usage-bg"><div class="ef-usage-fill" style="width:70%;background:#16A34A;"></div></div><span class="ef-usage-txt">70 / 100 resumes</span></div></div>
+          </div>
+          <div class="ef-feature-card">
+            <div class="ef-feature-ico" style="background:#FEF3C7;">🤖</div>
+            <div><div class="ef-feature-title">AI Score &amp; Analysis</div><div class="ef-feature-desc">Per-dimension scoring, signal extraction, manager-ready summaries</div><span class="ef-feature-on">✓ Enabled</span></div>
+          </div>
+          <div class="ef-feature-card">
+            <div class="ef-feature-ico" style="background:#DBEAFE;">📊</div>
+            <div><div class="ef-feature-title">Analytics Dashboard</div><div class="ef-feature-desc">Cross-department hiring analytics, funnel views and trend reports</div><span class="ef-feature-on">✓ Enabled</span></div>
+          </div>
+          <div class="ef-feature-card">
+            <div class="ef-feature-ico" style="background:#FEE2E2;">🛡️</div>
+            <div><div class="ef-feature-title">Bias Detection</div><div class="ef-feature-desc">Real-time scoring fairness checks, demographic-blind evaluation</div><span class="ef-feature-on">✓ Active</span></div>
+          </div>
+          <div class="ef-feature-card">
+            <div class="ef-feature-ico" style="background:#F0F2F8;">📋</div>
+            <div><div class="ef-feature-title">Audit Logs</div><div class="ef-feature-desc">Full tamper-evident audit trail of all interviews and decisions</div><span class="ef-feature-on">✓ Enabled</span></div>
+          </div>
+          <div class="ef-feature-card" style="opacity:.6;">
+            <div class="ef-feature-ico" style="background:#F0F2F8;">🔗</div>
+            <div><div class="ef-feature-title">HRIS Integration</div><div class="ef-feature-desc">Sync with Workday, Darwinbox, BambooHR, SAP SuccessFactors</div><span class="ef-feature-off">— Not configured</span></div>
+          </div>
+          <div class="ef-feature-card" style="opacity:.6;">
+            <div class="ef-feature-ico" style="background:#F0F2F8;">📹</div>
+            <div><div class="ef-feature-title">Video Proctoring</div><div class="ef-feature-desc">Live video proctoring with eye-tracking and attention signals</div><span class="ef-feature-off">— Add-on required</span></div>
+          </div>
+        </div>
+
+        <!-- Add-ons -->
+        <div style="font-size:12px;font-weight:700;color:#1A2035;margin-bottom:10px;">Available Add-ons</div>
+        <div class="em-card">
+          <div class="ef-addon-row">
+            <div style="font-size:18px;width:28px;">📹</div>
+            <div class="ef-addon-name">Video Proctoring</div>
+            <div class="ef-addon-desc">Facial attention, head movement &amp; eye tracking during AI interview sessions</div>
+            <div class="ef-addon-price">₹120/session</div>
+            <button class="ef-upgrade-btn">Enable →</button>
+          </div>
+          <div class="ef-addon-row">
+            <div style="font-size:18px;width:28px;">🌐</div>
+            <div class="ef-addon-name">Multi-language Interviews</div>
+            <div class="ef-addon-desc">Conduct AI interviews in Hindi, Tamil, Telugu, Kannada and 18 more languages</div>
+            <div class="ef-addon-price">₹2,500/mo</div>
+            <button class="ef-upgrade-btn">Enable →</button>
+          </div>
+          <div class="ef-addon-row">
+            <div style="font-size:18px;width:28px;">🔗</div>
+            <div class="ef-addon-name">HRIS Integration</div>
+            <div class="ef-addon-desc">Bi-directional sync with Workday, Darwinbox, BambooHR, SAP SuccessFactors</div>
+            <div class="ef-addon-price">₹4,999/mo</div>
+            <button class="ef-upgrade-btn">Configure →</button>
+          </div>
+          <div class="ef-addon-row">
+            <div style="font-size:18px;width:28px;">📞</div>
+            <div class="ef-addon-name">Dedicated Success Manager</div>
+            <div class="ef-addon-desc">Assigned CSM for onboarding, playbook design and quarterly reviews</div>
+            <div class="ef-addon-price">₹9,999/mo</div>
+            <button class="ef-upgrade-btn">Contact Sales</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     VIEW 4 — PROVIDER (Shortlis8 Ops)
+══════════════════════════════════ -->
+<div class="view" id="v-provider">
+  <div class="pv-topbar">
+    <div class="pv-brand">Shortlis<span>8</span><span class="pv-brand-tag">Ops</span></div>
+    <div class="pv-tabs">
+      <button class="pv-tab on" onclick="pvPage('overview',this)">Overview</button>
+      <button class="pv-tab" onclick="pvPage('clients',this)">Clients</button>
+      <button class="pv-tab" onclick="pvPage('revenue',this)">Revenue</button>
+      <button class="pv-tab" onclick="pvPage('infra',this)">Infrastructure</button>
+    </div>
+    <div class="pv-topbar-right">
+      <div class="pv-live-badge"><div class="pv-live-dot"></div>All Systems Operational</div>
+      <div class="pv-avatar">OP</div>
+    </div>
+  </div>
+  <div class="pv-body">
+    <div class="pv-sidebar">
+      <div class="pv-sidebar-section" style="margin-top:0;">Command</div>
+      <button class="pv-sidebar-item on" id="pvs-overview" onclick="pvPage('overview',this)"><span class="pv-sidebar-ico">⚡</span>Overview</button>
+      <button class="pv-sidebar-item" id="pvs-clients" onclick="pvPage('clients',this)"><span class="pv-sidebar-ico">🏢</span>Client Accounts<span class="pv-sb-badge">23</span></button>
+      <button class="pv-sidebar-item" id="pvs-revenue" onclick="pvPage('revenue',this)"><span class="pv-sidebar-ico">💰</span>Revenue</button>
+      <button class="pv-sidebar-item" id="pvs-infra" onclick="pvPage('infra',this)"><span class="pv-sidebar-ico">🔧</span>Infrastructure</button>
+      <div class="pv-sidebar-section">AI Platform</div>
+      <button class="pv-sidebar-item"><span class="pv-sidebar-ico">🎭</span>Agent Fleet</button>
+      <button class="pv-sidebar-item"><span class="pv-sidebar-ico">📊</span>Model Usage</button>
+      <button class="pv-sidebar-item"><span class="pv-sidebar-ico">🔬</span>Quality Scores</button>
+      <div class="pv-sidebar-section">Operations</div>
+      <button class="pv-sidebar-item"><span class="pv-sidebar-ico">🚨</span>Incidents<span class="pv-sb-badge red">1</span></button>
+      <button class="pv-sidebar-item"><span class="pv-sidebar-ico">📋</span>Audit Logs</button>
+      <button class="pv-sidebar-item"><span class="pv-sidebar-ico">💳</span>Billing</button>
+      <div class="pv-sidebar-section">Growth</div>
+      <button class="pv-sidebar-item"><span class="pv-sidebar-ico">📣</span>Trials<span class="pv-sb-badge blue">7</span></button>
+      <button class="pv-sidebar-item"><span class="pv-sidebar-ico">🔄</span>Renewals</button>
+      <button class="pv-sidebar-item"><span class="pv-sidebar-ico">📧</span>Support Tickets</button>
+    </div>
+
+    <div class="pv-content">
+      <!-- OVERVIEW -->
+      <div class="pv-page on" id="pv-pg-overview">
+        <div class="pv-kpi-strip">
+          <div class="pv-kpi-block"><div class="pv-kpi-val" style="color:var(--lime);">$84.2k</div><div class="pv-kpi-label">MRR</div><div class="pv-kpi-delta pv-delta-up">↑ 22% MoM</div></div>
+          <div class="pv-kpi-block"><div class="pv-kpi-val" style="color:#fff;">23</div><div class="pv-kpi-label">Active Clients</div><div class="pv-kpi-delta pv-delta-up">+4 this month</div></div>
+          <div class="pv-kpi-block"><div class="pv-kpi-val" style="color:#fff;">1,247</div><div class="pv-kpi-label">Interviews Today</div><div class="pv-kpi-delta pv-delta-up">↑ 31%</div></div>
+          <div class="pv-kpi-block"><div class="pv-kpi-val" style="color:#fff;">98.7<span style="font-size:14px;">%</span></div><div class="pv-kpi-label">Uptime (30d)</div><div class="pv-kpi-delta pv-delta-neu">SLA: 99.5%</div></div>
+          <div class="pv-kpi-block"><div class="pv-kpi-val" style="color:var(--lime);">4.8<span style="font-size:14px;">/5</span></div><div class="pv-kpi-label">Avg Satisfaction</div><div class="pv-kpi-delta pv-delta-up">↑ 0.2</div></div>
+          <div class="pv-kpi-block"><div class="pv-kpi-val" style="color:#fff;">7</div><div class="pv-kpi-label">Active Trials</div><div class="pv-kpi-delta pv-delta-up">3 converting</div></div>
+        </div>
+
+        <div class="pv-revenue-card">
+          <div class="pv-revenue-header">
+            <div><div class="pv-revenue-amount">$84,200</div><div class="pv-revenue-sub">Monthly Recurring Revenue · March 2026</div></div>
+            <div style="text-align:right;"><div style="font-size:10px;color:var(--text3);margin-bottom:3px;">ARR Run Rate</div><div style="font-family:'Geist Mono',monospace;font-size:17px;font-weight:600;color:var(--lime);">$1.01M</div></div>
+          </div>
+          <div class="pv-chart-bars">
+            ${[52,58,61,54,67,72,68,74,79,76,84,0].map((v,i)=>`<div class="pv-chart-bar-wrap"><div class="pv-chart-bar${i===10?' selected':''}" style="height:${v||2}%;${i===11?'opacity:.25;':''}" title="$${v}k"></div><div class="pv-chart-lbl">${['A','M','J','J','A','S','O','N','D','J','F','M'][i]}</div></div>`).join('')}
+          </div>
+        </div>
+
+        <div class="pv-g2" style="gap:14px;">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="font-size:13px;font-weight:600;">Top Clients</div>
+              <button class="pv-btn pv-btn-ghost pv-btn-sm" onclick="pvPage('clients',null)">View all →</button>
+            </div>
+            <div class="pv-client-grid">
+              <div class="pv-client-card"><div class="pv-client-top"><div class="pv-client-icon">🏢</div><div><div class="pv-client-name">Acme Corp</div><div class="pv-client-plan">Custom · Annual</div></div><div class="pv-client-status"><span style="padding:2px 8px;border-radius:6px;background:var(--lime2);color:var(--lime);font-size:10px;font-weight:700;">Active</span></div></div><div class="pv-client-metric"><div class="pv-client-metric-label">Monthly interviews</div><div class="pv-client-metric-val">284</div></div><div class="pv-client-metric"><div class="pv-client-metric-label">MRR</div><div class="pv-client-metric-val" style="color:var(--lime);">$4,200</div></div><div class="pv-client-bar"><div class="pv-client-bar-fill" style="width:71%;"></div></div></div>
+              <div class="pv-client-card"><div class="pv-client-top"><div class="pv-client-icon">🚀</div><div><div class="pv-client-name">TechVentures</div><div class="pv-client-plan">Growth · Monthly</div></div><div class="pv-client-status"><span style="padding:2px 8px;border-radius:6px;background:var(--lime2);color:var(--lime);font-size:10px;font-weight:700;">Active</span></div></div><div class="pv-client-metric"><div class="pv-client-metric-label">Monthly interviews</div><div class="pv-client-metric-val">167</div></div><div class="pv-client-metric"><div class="pv-client-metric-label">MRR</div><div class="pv-client-metric-val" style="color:var(--lime);">$2,800</div></div><div class="pv-client-bar"><div class="pv-client-bar-fill" style="width:48%;"></div></div></div>
+              <div class="pv-client-card"><div class="pv-client-top"><div class="pv-client-icon">🏗️</div><div><div class="pv-client-name">BuildCo</div><div class="pv-client-plan">Starter · Trial</div></div><div class="pv-client-status"><span style="padding:2px 8px;border-radius:6px;background:rgba(255,179,64,.1);color:var(--amber);font-size:10px;font-weight:700;">Trial</span></div></div><div class="pv-client-metric"><div class="pv-client-metric-label">Monthly interviews</div><div class="pv-client-metric-val">34</div></div><div class="pv-client-metric"><div class="pv-client-metric-label">MRR</div><div class="pv-client-metric-val" style="color:var(--text3);">$0 (trial)</div></div><div class="pv-client-bar"><div class="pv-client-bar-fill" style="width:22%;background:rgba(255,179,64,.5);"></div></div></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;">System Health</div>
+            <div class="pv-system-card" style="margin-bottom:12px;">
+              <div class="pv-sys-title">Agent Fleet Status</div>
+              <div class="pv-agent-health">
+                <div class="pv-agent-health-row"><div class="pv-agent-health-name">Resume Parser</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:92%;"></div></div><div class="pv-agent-health-val">92%</div><div class="pv-agent-health-status pv-status-ok">OK</div></div>
+                <div class="pv-agent-health-row"><div class="pv-agent-health-name">Question Gen</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:97%;"></div></div><div class="pv-agent-health-val">97%</div><div class="pv-agent-health-status pv-status-ok">OK</div></div>
+                <div class="pv-agent-health-row"><div class="pv-agent-health-name">Interviewer</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:89%;"></div></div><div class="pv-agent-health-val">89%</div><div class="pv-agent-health-status pv-status-ok">OK</div></div>
+                <div class="pv-agent-health-row"><div class="pv-agent-health-name">Analyst</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:76%;"></div></div><div class="pv-agent-health-val">76%</div><div class="pv-agent-health-status pv-status-warn">WARN</div></div>
+                <div class="pv-agent-health-row"><div class="pv-agent-health-name">Orchestrator</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:99%;"></div></div><div class="pv-agent-health-val">99%</div><div class="pv-agent-health-status pv-status-ok">OK</div></div>
+              </div>
+            </div>
+            <div class="pv-system-card">
+              <div class="pv-sys-title">Active Pipelines (Live)</div>
+              <div class="pv-pipeline-row"><div class="pv-pipeline-dot" style="background:var(--lime);animation:pulse .8s infinite;"></div><div class="pv-pipeline-client">Acme Corp</div><div class="pv-pipeline-role">Sr. Engineer × 3</div><div class="pv-pipeline-stage">In Interview</div><div class="pv-pipeline-time">Live</div></div>
+              <div class="pv-pipeline-row"><div class="pv-pipeline-dot" style="background:var(--blue);"></div><div class="pv-pipeline-client">TechVentures</div><div class="pv-pipeline-role">Product Manager × 8</div><div class="pv-pipeline-stage">Invited</div><div class="pv-pipeline-time">2h ago</div></div>
+              <div class="pv-pipeline-row"><div class="pv-pipeline-dot" style="background:#34D399;"></div><div class="pv-pipeline-client">BuildCo</div><div class="pv-pipeline-role">DevOps × 5</div><div class="pv-pipeline-stage">Processing</div><div class="pv-pipeline-time">4h ago</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">System Alerts</div>
+          <div class="pv-alert-row pv-alert-crit"><div class="pv-alert-icon">🚨</div><div class="pv-alert-body"><h4>Analyst Agent — Degraded Performance</h4><p>Response latency at 76% of SLA threshold. Auto-scaling triggered. Monitoring closely.</p></div></div>
+          <div class="pv-alert-row pv-alert-warn"><div class="pv-alert-icon">⚠️</div><div class="pv-alert-body"><h4>Acme Corp SLA — Uptime Below Target</h4><p>30-day uptime at 98.7% vs 99.5% SLA commitment. Review infrastructure provisioning.</p></div></div>
+          <div class="pv-alert-row pv-alert-info"><div class="pv-alert-icon">💡</div><div class="pv-alert-body"><h4>7 Active Trials — 3 Converting This Week</h4><p>BuildCo, FinCorp and NovaTech showing strong usage signals. CSM follow-up scheduled.</p></div></div>
+        </div>
+      </div>
+
+      <!-- CLIENTS PAGE -->
+      <div class="pv-page" id="pv-pg-clients">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Client Accounts <span style="font-size:12px;color:var(--text3);font-weight:400;">(23 active)</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+          ${[['🏢','Acme Corp','Custom · Annual','284','$4,200','Active','71'],['🚀','TechVentures','Growth · Monthly','167','$2,800','Active','48'],['🏗️','BuildCo','Starter · Trial','34','$0','Trial','22'],['🎓','EduFirst','Growth · Annual','210','$3,100','Active','60'],['💊','MedStaff','Custom · Monthly','390','$5,800','Active','88'],['🛒','RetailPro','Starter · Monthly','45','$0','Trial','30']].map(([ico,name,plan,iv,mrr,status,pct])=>`<div class="pv-client-card"><div class="pv-client-top"><div class="pv-client-icon">${ico}</div><div><div class="pv-client-name">${name}</div><div class="pv-client-plan">${plan}</div></div><div class="pv-client-status"><span style="padding:2px 8px;border-radius:6px;background:${status==='Active'?'var(--lime2)':'rgba(255,179,64,.1)'};color:${status==='Active'?'var(--lime)':'var(--amber)'};font-size:10px;font-weight:700;">${status}</span></div></div><div class="pv-client-metric"><div class="pv-client-metric-label">Interviews/month</div><div class="pv-client-metric-val">${iv}</div></div><div class="pv-client-metric"><div class="pv-client-metric-label">MRR</div><div class="pv-client-metric-val" style="color:${mrr!=='$0'?'var(--lime)':'var(--text3)'};">${mrr}${mrr==='$0'?' (trial)':''}</div></div><div class="pv-client-bar"><div class="pv-client-bar-fill" style="width:${pct}%;"></div></div></div>`).join('')}
+        </div>
+      </div>
+
+      <!-- REVENUE PAGE -->
+      <div class="pv-page" id="pv-pg-revenue">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Revenue Analytics</div>
+        <div class="pv-g3" style="margin-bottom:14px;">
+          <div class="pv-card"><div class="pv-card-title">MRR GROWTH</div><div style="font-family:'Geist Mono',monospace;font-size:28px;font-weight:600;color:var(--lime);">$84.2k</div><div style="font-size:11px;color:var(--text3);margin-top:3px;">↑ 22% month-over-month</div><div style="margin-top:12px;display:flex;align-items:flex-end;gap:3px;height:50px;">${[52,58,61,54,67,72,68,74,79,76,84].map((v,i)=>`<div style="flex:1;border-radius:2px 2px 0 0;height:${v}%;background:${i===10?'var(--lime)':'rgba(170,255,0,.2)'};" title="$${v}k"></div>`).join('')}</div></div>
+          <div class="pv-card"><div class="pv-card-title">ARR RUN RATE</div><div style="font-family:'Geist Mono',monospace;font-size:28px;font-weight:600;color:var(--lime);">$1.01M</div><div style="font-size:11px;color:var(--text3);margin-top:3px;">First $1M milestone reached</div><div style="margin-top:12px;font-size:12px;color:var(--text2);line-height:1.7;">Growth · $33,600/mo<br>Custom · $40,200/mo<br>Starter · $10,400/mo</div></div>
+          <div class="pv-card"><div class="pv-card-title">CHURN & EXPANSION</div><div style="display:flex;flex-direction:column;gap:9px;margin-top:4px;"><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2);">Monthly churn</span><span style="font-family:'Geist Mono',monospace;color:var(--red);font-weight:700;">1.2%</span></div><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2);">Net revenue retention</span><span style="font-family:'Geist Mono',monospace;color:var(--lime);font-weight:700;">118%</span></div><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2);">Avg contract value</span><span style="font-family:'Geist Mono',monospace;font-weight:700;">$3,660</span></div><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2);">Trial → Paid conversion</span><span style="font-family:'Geist Mono',monospace;color:var(--lime);font-weight:700;">43%</span></div></div></div>
+        </div>
+      </div>
+
+      <!-- INFRA PAGE -->
+      <div class="pv-page" id="pv-pg-infra">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Infrastructure & Reliability</div>
+        <div class="pv-system-grid">
+          <div class="pv-system-card">
+            <div class="pv-sys-title">Agent Fleet Health</div>
+            <div class="pv-agent-health">
+              <div class="pv-agent-health-row"><div class="pv-agent-health-name">Resume Parser</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:92%;"></div></div><div class="pv-agent-health-val">92%</div><div class="pv-agent-health-status pv-status-ok">OK</div></div>
+              <div class="pv-agent-health-row"><div class="pv-agent-health-name">Question Generator</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:97%;"></div></div><div class="pv-agent-health-val">97%</div><div class="pv-agent-health-status pv-status-ok">OK</div></div>
+              <div class="pv-agent-health-row"><div class="pv-agent-health-name">Voice Interviewer</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:89%;"></div></div><div class="pv-agent-health-val">89%</div><div class="pv-agent-health-status pv-status-ok">OK</div></div>
+              <div class="pv-agent-health-row"><div class="pv-agent-health-name">Score Analyst</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:76%;"></div></div><div class="pv-agent-health-val">76%</div><div class="pv-agent-health-status pv-status-warn">WARN</div></div>
+              <div class="pv-agent-health-row"><div class="pv-agent-health-name">Orchestrator</div><div class="pv-agent-health-bar"><div class="pv-agent-health-fill" style="width:99%;"></div></div><div class="pv-agent-health-val">99%</div><div class="pv-agent-health-status pv-status-ok">OK</div></div>
+            </div>
+          </div>
+          <div class="pv-system-card">
+            <div class="pv-sys-title">Service Uptime (30d)</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              ${[['API Gateway','99.9%','ok'],['Interview Engine','98.7%','warn'],['Storage Layer','100%','ok'],['Auth Service','99.9%','ok'],['Notification Service','99.4%','ok']].map(([s,u,st])=>`<div style="display:flex;align-items:center;gap:10px;font-size:11px;"><span style="flex:1;color:var(--text2);">${s}</span><span style="font-family:'Geist Mono',monospace;font-weight:700;color:${st==='warn'?'var(--amber)':'var(--lime)'};">${u}</span><div class="pv-agent-health-status pv-status-${st}" style="font-size:8px;">${st==='ok'?'OK':'WARN'}</div></div>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Auth ── */
+let selectedRole="candidate";
+function authTab(t){
+  document.getElementById("auth-tab-in").style.background=t==="in"?"rgba(255,255,255,.09)":"transparent";
+  document.getElementById("auth-tab-in").style.color=t==="in"?"#fff":"rgba(255,255,255,.35)";
+  document.getElementById("auth-tab-up").style.background=t==="up"?"rgba(255,255,255,.09)":"transparent";
+  document.getElementById("auth-tab-up").style.color=t==="up"?"#fff":"rgba(255,255,255,.35)";
+  document.getElementById("auth-cta").textContent=t==="in"?"Sign in →":"Create account →";
+}
+function selectRole(btn,role){
+  document.querySelectorAll(".auth-role-btn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  selectedRole=role;
+}
+function doSignIn(){
+  const email=document.getElementById("auth-email").value.trim();
+  const pw=document.getElementById("auth-pw").value;
+  if(!email||!pw){const cta=document.getElementById("auth-cta");cta.style.background="#FF4D4D";cta.textContent="Fill in all fields";setTimeout(()=>{cta.style.background="#AAFF00";cta.textContent="Sign in →";},1400);return;}
+  const cta=document.getElementById("auth-cta");
+  cta.textContent="Signing in…";cta.style.opacity=".7";cta.style.cursor="not-allowed";
+  setTimeout(()=>{
+    const authEl=document.getElementById("auth-screen");
+    authEl.style.animation="authFadeOut .35s ease forwards";
+    setTimeout(()=>{
+      authEl.style.display="none";
+      document.getElementById("main-shell").style.display="flex";
+      const viewId=selectedRole||"candidate";
+      document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+      document.querySelectorAll(".stab").forEach(x=>x.classList.remove("on"));
+      document.getElementById("v-"+viewId)?.classList.add("on");
+      const tabIdx={candidate:0,recruiter:1,enterprise:2,provider:3}[viewId]||0;
+      document.querySelectorAll(".stab")[tabIdx]?.classList.add("on");
+      document.getElementById("sw-user-name").textContent=email;
+    },380);
+  },900);
+}
+
+/* ── View switching ── */
+function switchView(v,btn){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.stab').forEach(x=>x.classList.remove('on'));
+  document.getElementById('v-'+v)?.classList.add('on');
+  btn?.classList.add('on');
+}
+
+/* ── Candidate pages ── */
+function cvPage(p,btn){
+  document.querySelectorAll('.cv-page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.cv-tab,.cv-sb-item').forEach(x=>x.classList.remove('on'));
+  document.getElementById('cv-pg-'+p)?.classList.add('on');
+  if(btn) btn.classList.add('on');
+}
+
+/* ── Video Room ── */
+let cvStream=null,cvMicOn=true,cvCamOn=false;
+let cvTimerInt=null,cvTimerSec=0,cvAnsResolve=null;
+
+async function openRoom(){
+  document.getElementById('cv-room').classList.add('on');
+  try{
+    cvStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    const vid=document.getElementById('cv-self-vid');
+    vid.srcObject=cvStream;vid.style.display='block';
+    document.getElementById('cv-self-placeholder').style.display='none';
+  }catch(e){console.log('No camera/mic:',e);}
+  cvTimerSec=0;clearInterval(cvTimerInt);
+  cvTimerInt=setInterval(()=>{cvTimerSec++;const m=String(Math.floor(cvTimerSec/60)).padStart(2,'0'),s=String(cvTimerSec%60).padStart(2,'0');document.getElementById('cv-timer').textContent=m+':'+s;},1000);
+  setTimeout(()=>cvRunInterview(),600);
+}
+function closeRoom(){
+  document.getElementById('cv-room').classList.remove('on');
+  clearInterval(cvTimerInt);
+  cvStream?.getTracks().forEach(t=>t.stop());cvStream=null;
+  cvPage('result',null);
+}
+function cvToggleMic(){cvMicOn=!cvMicOn;if(cvStream)cvStream.getAudioTracks().forEach(t=>t.enabled=cvMicOn);document.getElementById('cv-btn-mic').classList.toggle('off',!cvMicOn);document.getElementById('cv-btn-mic').textContent=cvMicOn?'🎙️':'🔇';}
+function cvToggleCam(){cvCamOn=!cvCamOn;if(cvStream)cvStream.getVideoTracks().forEach(t=>t.enabled=cvCamOn);document.getElementById('cv-btn-cam').classList.toggle('off',!cvCamOn);}
+
+const cvQs=[
+  {q:"Walk me through your most complex distributed systems challenge — scale, failure mode, and resolution.",t:"technical"},
+  {q:"Describe a time you disagreed with a technical decision. What happened and what did you do?",t:"behavioural"},
+  {q:"How do you approach mentoring junior engineers? Give a specific example.",t:"behavioural"},
+  {q:"Design a rate limiter for a high-traffic API with 10M requests per second.",t:"technical"},
+  {q:"If you joined Acme tomorrow, what would your 30-60-90 day plan look like?",t:"situational"}
+];
+let cvQIndex=0,cvTranscript=[];
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function cvRunInterview(){
+  cvQIndex=0;cvTranscript=[];
+  while(cvQIndex<cvQs.length){
+    const q=cvQs[cvQIndex];
+    document.getElementById('cv-q-overlay').style.display='block';
+    document.getElementById('cv-q-badge').textContent=`${q.t==='technical'?'🔧':'💬'} ${q.t} · Q${cvQIndex+1} of ${cvQs.length}`;
+    document.getElementById('cv-q-text').textContent=q.q;
+    document.getElementById('cv-ai-wave').className='ai-voice-wave speak';
+    document.getElementById('cv-ai-status').textContent='Speaking…';
+    document.getElementById('cv-room-status').textContent=`Q ${cvQIndex+1} / ${cvQs.length}`;
+    document.getElementById('cv-room-progress').style.width=(cvQIndex/cvQs.length*100)+'%';
+    await sleep(Math.min(3000,q.q.length*18));
+    document.getElementById('cv-ai-wave').className='ai-voice-wave';
+    document.getElementById('cv-ai-status').textContent='Your turn — please answer';
+    document.getElementById('cv-answer-bar').classList.remove('hidden');
+    document.getElementById('cv-ans-input').focus();
+    const ans=await new Promise(r=>{cvAnsResolve=r;});
+    document.getElementById('cv-answer-bar').classList.add('hidden');
+    cvTranscript.push({q:q.q,a:ans});
+    const tw=ans.toLowerCase(),wc=ans.split(' ').length;
+    const th=['distributed','scale','architecture','database','cache','kubernetes','api'].filter(w=>tw.includes(w)).length;
+    const tech=Math.min(100,(parseInt(document.getElementById('cv-ls-t').style.width)||0)+th*10+(wc>80?8:0));
+    const clarity=Math.min(100,(parseInt(document.getElementById('cv-ls-c').style.width)||0)+(wc>60?8:4));
+    const depth=Math.min(100,(parseInt(document.getElementById('cv-ls-d').style.width)||0)+(th*7)+(wc>100?10:0));
+    document.getElementById('cv-ls-t').style.width=tech+'%';document.getElementById('cv-ls-tv').textContent=tech||'—';
+    document.getElementById('cv-ls-c').style.width=clarity+'%';document.getElementById('cv-ls-cv').textContent=clarity||'—';
+    document.getElementById('cv-ls-d').style.width=depth+'%';document.getElementById('cv-ls-dv').textContent=depth||'—';
+    document.getElementById('cv-ai-wave').className='ai-voice-wave speak';
+    document.getElementById('cv-ai-status').textContent='Analysing response…';
+    await sleep(1200);
+    document.getElementById('cv-ai-wave').className='ai-voice-wave';
+    cvQIndex++;
+  }
+  document.getElementById('cv-ai-status').textContent='Interview complete — great work!';
+  document.getElementById('cv-q-overlay').style.display='none';
+  document.getElementById('cv-room-progress').style.width='100%';
+  setTimeout(()=>closeRoom(),2000);
+}
+function cvSubmitAns(){const i=document.getElementById('cv-ans-input'),v=i.value.trim();if(!v||!cvAnsResolve)return;i.value='';const r=cvAnsResolve;cvAnsResolve=null;r(v);}
+document.addEventListener('keydown',e=>{if(document.getElementById('cv-room').classList.contains('on')&&e.key==='m')cvToggleMic();});
+
+/* ── Recruiter pages ── */
+function rvPage(p,btn){
+  document.querySelectorAll('.rv-page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.rv-tab,.rv-sidebar-item').forEach(x=>x.classList.remove('on'));
+  document.getElementById('rv-pg-'+p)?.classList.add('on');
+  document.getElementById('rvs-'+p)?.classList.add('on');
+  if(btn) btn.classList.add('on');
+}
+function rvOpenDetail(){document.getElementById('rv-detail-panel').classList.add('open');}
+function rvCloseDetail(){document.getElementById('rv-detail-panel').classList.remove('open');}
+
+async function rvSimulatePipeline(){
+  const status=document.getElementById('rv-pipeline-status');
+  const agents=[['rv-ag-orch','rv-agd-orch','Routing…'],['rv-ag-parse','rv-agd-parse','Parsing…'],['rv-ag-qgen','rv-agd-qgen','Generating Qs…'],['rv-ag-ivr','rv-agd-ivr','Sending Invites…'],['rv-ag-ana','rv-agd-ana','Ready']];
+  for(const[sid,did,txt] of agents){
+    document.getElementById(sid).textContent=txt;
+    document.getElementById(did).className='rv-agent-dot live';
+    status.textContent='Agent: '+txt;
+    await sleep(700);
+    document.getElementById(did).className='rv-agent-dot done';
+    document.getElementById(sid).textContent='Done ✓';
+  }
+  status.textContent='✅ Pipeline launched — voice interview invites sent to 3 candidates';
+  setTimeout(()=>rvPage('pipeline',null),1400);
+}
+
+
+/* ── Enterprise pages ── */
+function epPage(p,btn){
+  document.querySelectorAll('.ep-page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.ep-tab,.ev-nav-item').forEach(x=>x.classList.remove('on'));
+  document.getElementById('ep-pg-'+p)?.classList.add('on');
+  // activate matching tab
+  document.querySelectorAll('.ep-tab').forEach(t=>{if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+p+"'"))t.classList.add('on');});
+  if(btn)btn.classList.add('on');
+}
+
+/* ── Provider pages ── */
+function pvPage(p,btn){
+  document.querySelectorAll('.pv-page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pv-tab,.pv-sidebar-item').forEach(x=>x.classList.remove('on'));
+  document.getElementById('pv-pg-'+p)?.classList.add('on');
+  document.getElementById('pvs-'+p)?.classList.add('on');
+  if(btn) btn.classList.add('on');
+}
+
+/* ── Filter buttons (UI only) ── */
+document.querySelectorAll('.rv-filter-btn,.ev-filter-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    this.closest('.rv-filter-btns,.ev-filter-btns').querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+    this.classList.add('on');
+  });
+});
+</script>
+</body>
+</html>
